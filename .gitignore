@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+.pytest_cache/
+# generato da demo_2d.py
+emeans_2d.gif
+# impostazioni personali di BMAD
+_bmad/config.user.toml
