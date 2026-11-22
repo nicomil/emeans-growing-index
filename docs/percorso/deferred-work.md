@@ -31,3 +31,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-4b-regola-della-massa.md`
   summary: Valutare la regola dalla quota su quote e livelli di deriva non usati nella taratura, con masse sotto 0,01 e griglia più fitta.
   evidence: Taratura e valutazione condividono i 15 scenari; in quattro casi la curva dell'errore scende ancora al bordo inferiore della griglia.
+- source_spec: `_bmad-output/implementation-artifacts/spec-d-aggiornamenti-in-sequenza.md`
+  summary: Riassegnazione locale: dopo l'aggiornamento sui punti nuovi, rileggere e riassegnare solo le liste dei cluster il cui centroide si è spostato oltre una soglia.
+  evidence: Con la metrica delle liste l'errore dei punti iniziali sale di 9,6-12,7% quando i centroidi si spostano (massa 0,2); riassegnando tutto la stessa strategia scende da +10,4% a +3,4%. Il costo si potrebbe limitare ai cluster toccati, come fanno SPFresh e Ada-IVF.
+- source_spec: `_bmad-output/implementation-artifacts/spec-d-aggiornamenti-in-sequenza.md`
+  summary: Rimisurare i passi 4 e 4b con la metrica delle liste e, su un indice vero, con il recall a numero fisso di liste sondate.
+  evidence: Quei passi usano solo la metrica che riassegna tutto. La metrica delle liste è un errore di quantizzazione e non dice quanto recall si perde.

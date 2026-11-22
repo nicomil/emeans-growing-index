@@ -101,3 +101,7 @@ Un revisore senza contesto (Blind Hunter), 17 rilievi. Ha ricalcolato le griglie
 | 15 | I file grezzi non permettevano di ricontrollare taratura e oracolo | medium | Vero. Ora salvano le griglie complete di tutti gli insiemi di dati. |
 | 16 | Il file dei parametri non ha provenienza | low, respinto | Vero ma di poco peso in uno studio con due comandi da lanciare in ordine. |
 | 17 | Nessun controllo su taratura e previsione | medium | Vero. Aggiunto un test: la taratura ritrova una regola nota. Il test ha mostrato che la taratura non distingue masse tra due punti della griglia. |
+
+## Avvertenza aggiunta dopo il passo D
+
+I risultati di questa spec misurano l'errore riassegnando ogni punto al centroide più vicino. Un indice che legge solo i punti nuovi non lo fa: i vettori già inseriti restano nelle loro liste. Con quella misura, al passo D, il vantaggio della massa ridotta sul mini-batch k-means classico sparisce (vedi `spec-d-aggiornamenti-in-sequenza.md`). Le conclusioni di questa spec sulla massa migliore valgono quindi solo se dopo l'aggiornamento si riassegnano tutti i vettori, operazione che costa quanto una epoca. Restano valide in ogni caso la conclusione sull'uso ingenuo e quella sulla rianimazione.

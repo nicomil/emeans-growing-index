@@ -130,3 +130,7 @@ Un revisore senza contesto (Blind Hunter), 13 rilievi. Ha verificato con codice 
 | 11 | La rianimazione non è un confronto equo e non è un oblio neutro | medium | Vero. Riformulata la conclusione 6 come "inadatta a questo scenario"; variante che sconta solo i cluster colpiti registrata in `deferred-work.md`. |
 | 12 | Conteggi e centroidi vecchi non coerenti; i conteggi costano una passata | low | Vero. Dichiarata l'ipotesi che l'indice conosca i conteggi e l'incoerenza con i centroidi finalizzati. |
 | 13 | Scenario unico e favorevole all'oblio; nessun controllo senza deriva | high | Vero. Aggiunto il tipo di dati senza deriva, che ha cambiato le conclusioni 2 e 3. I casi misti restano nei limiti. |
+
+## Avvertenza aggiunta dopo il passo D
+
+I risultati di questa spec misurano l'errore riassegnando ogni punto al centroide più vicino. Un indice che legge solo i punti nuovi non lo fa: i vettori già inseriti restano nelle loro liste. Con quella misura, al passo D, il vantaggio della massa ridotta sul mini-batch k-means classico sparisce (vedi `spec-d-aggiornamenti-in-sequenza.md`). Le conclusioni di questa spec sulla massa migliore valgono quindi solo se dopo l'aggiornamento si riassegnano tutti i vettori, operazione che costa quanto una epoca. Restano valide in ogni caso la conclusione sull'uso ingenuo e quella sulla rianimazione.
