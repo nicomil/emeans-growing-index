@@ -1,44 +1,44 @@
-"""Passo 5: gli stessi confronti su embedding veri, con il recall di una ricerca.
+"""Passi 5 e 6: strategie di aggiornamento di un indice su embedding veri.
 
-Corpus (embed_corpus.py): "news", titoli e sommari HuffPost 2012-2022, oppure
-"arxiv", titolo e abstract di articoli arXiv 2007-2021. L'indice parte dai primi
-100.000 testi e ne riceve altri 100.000 in dieci giri da 10.000, sempre in ordine
-di data: la deriva è quella vera del corpus.
+L'indice parte dai primi 100.000 testi di un corpus con date e ne riceve altri
+100.000 in dieci giri da 10.000, in ordine di data: la deriva è quella vera.
 
-Misure, a ogni giro riportato:
-  errore nelle liste: ogni articolo resta nella lista in cui è stato inserito
-  recall@10:          per gli articoli tenuti fuori dall'indice si cercano i 10
-                      più vicini sondando le liste più prossime fino a leggere
-                      l'1% dell'indice esatto; si conta quanti dei candidati sono
-                      vicini almeno quanto il decimo vero (così duplicati e
-                      pareggi non contano come errori)
+Insiemi di dati (embed_corpus.py): news, arxiv con all-MiniLM-L6-v2 (384 dimensioni);
+news-bge, arxiv-bge con bge-base-en-v1.5 (768 dimensioni).
 
-Le interrogazioni sono articoli, non domande di utenti: il recall vale per
-"trova articoli simili". Si usano solo quelle datate entro il periodo coperto
-dall'indice, quindi il loro numero cresce a ogni giro. I giri hanno lo stesso
-numero di articoli, non la stessa durata: il corpus si dirada dopo il 2017.
+Misure, ai giri riportati:
+  errore nelle liste: ogni testo resta nella lista in cui è stato inserito
+  recall@10:          per i testi tenuti fuori dall'indice si sondano le liste più
+                      vicine fino a leggere esattamente una quota dell'indice (0,1%
+                      e 1%); si conta quanti candidati sono vicini almeno quanto il
+                      decimo vero, così duplicati e pareggi non contano come errori
+Per le strategie sui soli testi nuovi si misura anche cosa succede riassegnando
+tutti i vettori ai centroidi aggiornati, come farebbe chi ricostruisce le liste.
 
-Controllo senza deriva: gli stessi articoli inseriti in ordine casuale in un
-indice mai aggiornato. La differenza con l'ordine di data è l'effetto della deriva;
-il resto è il costo di centroidi tarati su metà dei dati.
+Le interrogazioni sono testi del corpus, non domande di utenti: il recall vale per
+"trova testi simili". Si usano solo quelle datate entro il periodo coperto
+dall'indice, quindi il loro numero cresce a ogni giro.
 
-Alla fine confronta anche il ricalcolo completo: e-means a 3 epoche contro
-k-means classico a 25, con i tempi delle implementazioni di Faiss.
+Scompone le cause del danno dell'uso ingenuo di e-means (centroidi vecchi come
+partenza, addestramento sui soli testi nuovi) accendendo e spegnendo tre cose:
+la massa iniziale dei centroidi, la rianimazione dei cluster, le medie finali.
 
-Uso: uv run --group real embed_corpus.py news      (una volta per corpus)
-     uv run exp_real.py news > results/exp_real_news.md
+Controllo senza deriva: gli stessi testi in ordine casuale, indice mai aggiornato.
+
+I tempi del ricalcolo completo sono in bench_rebuild.py, che va eseguito da solo.
+
+Uso: uv run exp_real.py news > results/exp_real_news.md
 """
 
+import itertools
 import json
 import sys
-import time
 from pathlib import Path
 
-import faiss
 import numpy as np
 from faiss.contrib.e_means.e_means import NumpyEmeans
 
-from emeans import batch_law, emeans, mse
+from emeans import INIT_MASS, batch_law, emeans, step_law
 from exp_new_only import online_mean
 from exp_rule import warm
 from exp_sequence import list_mse
@@ -49,27 +49,52 @@ N0, ROUNDS, CHUNK, N_QUERIES = 100_000, 10, 10_000, 3_000
 REPORT = (1, 5, 10)
 assert REPORT[-1] == ROUNDS
 SEEDS = (0, 1, 2)
-SELECTIVITY, TOP = 0.01, 10
-REFERENCE = "da zero su tutti i dati, 10 epoche (riferimento)"
-CONTROL = "mai aggiornare, articoli in ordine casuale (controllo senza deriva)"
-# Strategie che rileggono tutto: nome -> epoche. Quelle a caldo ripartono dai propri centroidi del giro prima.
-WARM = {"a caldo su tutti i dati, 1 epoca": 1, "a caldo su tutti i dati, 3 epoche": 3}
-COLD = {"da zero su tutti i dati, 1 epoca": 1, "da zero su tutti i dati, 3 epoche": 3, REFERENCE: 10}
-D = 384
+BUDGETS, TOP = (0.001, 0.01), 10
+D = None  # dimensione degli embedding, fissata da load()
 
-# nome: aggiornamento(centroidi, dimensioni delle liste, punti nuovi, seed)
+STALE = "mai aggiornare"
+FAISS_NAIVE = "e-means di Faiss 1.16.0, impostazioni di serie"
+ONLINE = "mini-batch k-means dalle dimensioni delle liste"
+TUNED = "e-means: massa 0,2, passo/4, senza rianimazione né medie finali"
+REFERENCE = "da zero, 10 epoche (riferimento)"
+CONTROL = "mai aggiornare, testi in ordine casuale (controllo senza deriva)"
+WARM = {"a caldo, 1 epoca a giro": (1, False), "a caldo, 3 epoche a giro": (3, False), "a caldo con massa, 3 epoche a giro": (3, True)}
+COLD = {"da zero, 1 epoca": 1, "da zero, 3 epoche": 3, REFERENCE: 10}
+
+
+def ablation_name(mass, revival, closing):
+    yes = lambda flag: "sì" if flag else "no"
+    return f"e-means: massa {yes(mass)}, rianimazione {yes(revival)}, medie finali {yes(closing)}"
+
+
+def ablation(mass, revival, closing):
+    """e-means sui soli testi nuovi dai centroidi vecchi, con tre interruttori."""
+    def update(centroids, counts, added, seed):
+        alpha0 = step_law(len(added), K, 1, batch_law(len(added), K, 1, D))
+        init_mass = np.maximum(alpha0 * counts, INIT_MASS) if mass else INIT_MASS
+        return emeans(added, K, epochs=1, seed=seed, init=centroids, init_mass=init_mass,
+                      tau=0.1 if revival else 0.0, finalize=closing)
+    return update
+
+
+def faiss_naive(centroids, counts, added, seed):
+    trained, _ = NumpyEmeans(D, K, nepochs=1, seed=seed).train(
+        np.ascontiguousarray(added, dtype=np.float32), init_centroids=centroids.astype(np.float32))
+    return trained.astype(np.float64)
+
+
+# nome: aggiornamento(centroidi, dimensioni delle liste, testi nuovi, seed). Leggono solo i testi nuovi.
 NEW_ONLY = {
-    "mai aggiornare": lambda c, counts, added, seed: c,
-    "e-means, impostazioni di serie (solo nuovi)": lambda c, counts, added, seed: emeans(
-        added, K, epochs=1, seed=seed, init=c),
-    "mini-batch dalle dimensioni delle liste (solo nuovi)": lambda c, counts, added, seed: online_mean(
-        added, c, counts, batch_law(len(added), K, 1, D), seed),
-    "e-means, massa 0,2 (solo nuovi)": lambda c, counts, added, seed: warm(added, c, counts, 0.2, seed),
+    STALE: lambda c, counts, added, seed: c,
+    FAISS_NAIVE: faiss_naive,
+    **{ablation_name(*flags): ablation(*flags) for flags in itertools.product((False, True), (True, False), (True, False))},
+    ONLINE: lambda c, counts, added, seed: online_mean(added, c, counts, batch_law(len(added), K, 1, D), seed),
+    TUNED: lambda c, counts, added, seed: warm(added, c, counts, 0.2, seed),
 }
 
 
 def tenth_score(index, queries):
-    """Somiglianza del TOP-esimo articolo più vicino a ogni interrogazione. Vettori normalizzati: basta il prodotto."""
+    """Somiglianza del TOP-esimo testo più vicino a ogni interrogazione. Vettori normalizzati: basta il prodotto."""
     out = []
     for start in range(0, len(queries), 500):
         scores = queries[start : start + 500] @ index.T
@@ -77,23 +102,29 @@ def tenth_score(index, queries):
     return np.concatenate(out)
 
 
-def recall(index, labels, centroids, queries, threshold):
-    """Recall@TOP sondando le liste più vicine fino a leggere esattamente SELECTIVITY dell'indice."""
+def recall(index, labels, centroids, queries, threshold, budgets=BUDGETS, nprobe=None):
+    """Quanti dei TOP veri si trovano, per ogni interrogazione e per ogni quota dell'indice letta.
+
+    Restituisce interi tra 0 e TOP, di forma (quote, interrogazioni). Con nprobe si
+    sondano invece esattamente nprobe liste intere (serve al confronto con Faiss).
+    """
     order = np.argsort(labels, kind="stable")
     ends = np.cumsum(np.bincount(labels, minlength=K))
     starts = ends - np.bincount(labels, minlength=K)
     ranking = np.argsort(assign_scores(queries, centroids), axis=1)
-    found = np.zeros(len(queries))
+    limits = [len(index)] if nprobe else [int(b * len(index)) for b in budgets]
+    found = np.zeros((len(limits), len(queries)), dtype=np.uint8)
     for i, query in enumerate(queries):
-        candidates, left = [], int(SELECTIVITY * len(index))
-        for j in ranking[i]:
+        candidates, left = [], max(limits)
+        for j in ranking[i][:nprobe]:
             members = order[starts[j] : ends[j]][:left]  # l'ultima lista è letta solo in parte
             candidates.append(members)
             left -= len(members)
             if left == 0:
                 break
-        scores = index[np.concatenate(candidates)] @ query
-        found[i] = min(int((scores >= threshold[i] - 1e-6).sum()), TOP) / TOP
+        hits = index[np.concatenate(candidates)] @ query >= threshold[i] - 1e-6
+        for b, limit in enumerate(limits):
+            found[b, i] = min(int(hits[:limit].sum()), TOP)
     return found
 
 
@@ -104,10 +135,12 @@ def assign_scores(queries, centroids):
 
 
 def load(corpus="news"):
+    global D
     x = np.load(f"data/{corpus}_embeddings.npy")
     dates = np.load(f"data/{corpus}_dates.npy")
-    assert x.shape[1] == D and len(x) == len(dates) >= N0 + ROUNDS * CHUNK + N_QUERIES
-    assert (dates[1:] >= dates[:-1]).all(), "gli articoli devono essere in ordine di data"
+    D = x.shape[1]
+    assert len(x) == len(dates) >= N0 + ROUNDS * CHUNK + N_QUERIES
+    assert (dates[1:] >= dates[:-1]).all(), "i testi devono essere in ordine di data"
     held = np.zeros(len(x), dtype=bool)
     held[np.random.default_rng(0).choice(len(x), N_QUERIES, replace=False)] = True
     docs, doc_dates = x[~held][: N0 + ROUNDS * CHUNK], dates[~held][: N0 + ROUNDS * CHUNK]
@@ -115,13 +148,13 @@ def load(corpus="news"):
 
 
 def run(seed, docs, doc_dates, queries, query_dates):
+    """Restituisce i numeri per strategia e giro, e i risultati interrogazione per interrogazione."""
     docs64 = docs.astype(np.float64)
     old = docs64[:N0]
     start = emeans(old, K, epochs=5, seed=seed)
     start_labels = assign_all(old, start)[0]
-    state = {name: (start, start_labels) for name in NEW_ONLY}
-    state.update({name: (start, start_labels) for name in WARM})
-    out = {}
+    state = {name: (start, start_labels) for name in (*NEW_ONLY, *WARM)}
+    out, per_query = {}, {}
     for r in range(1, ROUNDS + 1):
         n = N0 + r * CHUNK
         seen, added = docs64[:n], docs64[n - CHUNK : n]
@@ -130,8 +163,13 @@ def run(seed, docs, doc_dates, queries, query_dates):
             counts = np.bincount(labels, minlength=K).astype(np.float64)
             centroids = update(centroids, counts, added, 1000 * seed + r)
             state[name] = centroids, np.concatenate([labels, assign_all(added, centroids)[0]])
-        for name, epochs in WARM.items():
-            centroids = emeans(seen, K, epochs=epochs, seed=1000 * seed + r, init=state[name][0])
+        for name, (epochs, with_mass) in WARM.items():
+            centroids, labels = state[name]
+            init_mass = INIT_MASS
+            if with_mass:  # massa che i centroidi avrebbero in una corsa già a regime
+                batch = batch_law(n, K, epochs, D)
+                init_mass = np.maximum(batch * np.bincount(labels, minlength=K) / n, INIT_MASS)
+            centroids = emeans(seen, K, epochs=epochs, seed=1000 * seed + r, init=centroids, init_mass=init_mass)
             state[name] = centroids, assign_all(seen, centroids)[0]
         if r not in REPORT:
             continue
@@ -147,11 +185,11 @@ def run(seed, docs, doc_dates, queries, query_dates):
 
         def measure(name, index, index64, centroids, labels):
             found = recall(index, labels, centroids, queries[usable], threshold)
+            per_query[f"{r}|{name}"] = found
             out.setdefault(name, {})[r] = {
                 "errore": 100 * (list_mse(index64, centroids, labels) / reference - 1),
-                "recall": float(found.mean()),
-                "recall iniziale": float(found[~recent].mean()),
-                "recall aggiunto": float(found[recent].mean()),
+                **{f"recall {b:.1%}": float(found[i].mean()) / TOP for i, b in enumerate(BUDGETS)},
+                "recall aggiunto": float(found[-1][recent].mean()) / TOP,
                 "interrogazioni": int(usable.sum()),
                 "interrogazioni aggiunte": int(recent.sum()),
                 "errore assoluto del riferimento": reference,
@@ -159,60 +197,42 @@ def run(seed, docs, doc_dates, queries, query_dates):
 
         for name, (centroids, labels) in indexes.items():
             measure(name, docs[:n], seen, centroids, labels)
-    # Controllo senza deriva: stessi articoli, ordine casuale, centroidi dei primi N0 e mai aggiornati.
+            if name in NEW_ONLY and name != STALE:  # e se dopo l'aggiornamento si ricostruissero le liste?
+                measure(name + " + liste ricostruite", docs[:n], seen, centroids, assign_all(seen, centroids)[0])
+        per_query[f"{r}|recente"] = recent
+    # Controllo senza deriva: stessi testi, ordine casuale, centroidi dei primi N0 e mai aggiornati.
     order = np.random.default_rng(seed).permutation(len(docs))
     centroids = emeans(docs64[order[:N0]], K, epochs=5, seed=seed)
     measure(CONTROL, docs[order], docs64[order], centroids, assign_all(docs64[order], centroids)[0])
-    return out
-
-
-def full_rebuild(docs, seed):
-    """Ricalcolo completo sull'indice finale con le implementazioni di Faiss: tempo ed errore."""
-    x = np.ascontiguousarray(docs)
-    results = {}
-    t = time.perf_counter()
-    centroids, _ = NumpyEmeans(D, K, nepochs=3, seed=seed).train(x)
-    results["e-means di Faiss, 3 epoche"] = (time.perf_counter() - t, mse(x, centroids))
-    for iterations in (3, 5, 10, 25):
-        t = time.perf_counter()
-        kmeans = faiss.Kmeans(D, K, niter=iterations, seed=seed + 1)
-        kmeans.train(x)
-        results[f"k-means di Faiss, {iterations} iterazioni"] = (time.perf_counter() - t, mse(x, kmeans.centroids))
-    return results
+    return out, per_query
 
 
 if __name__ == "__main__":
     corpus = sys.argv[1] if len(sys.argv) > 1 else "news"
     docs, doc_dates, queries, query_dates = load(corpus)
-    print(f"Corpus: {corpus}.")
-    print(f"Indice iniziale: {N0} articoli, dal {doc_dates[0]} al {doc_dates[N0 - 1]}.")
-    print(f"{ROUNDS} giri da {CHUNK} articoli, fino al {doc_dates[-1]}. {K} liste, {len(SEEDS)} seed dell'algoritmo, un solo corpus.")
-    print(f"Recall@{TOP} leggendo l'{SELECTIVITY:.0%} dell'indice. Mediana su {len(SEEDS)} seed; [min; max] è la sola variabilità dell'algoritmo.")
-    print(f"Gli articoli dopo il {doc_dates[-1]} restano fuori dall'esperimento.\n")
-    runs = [run(seed, docs, doc_dates, queries, query_dates) for seed in SEEDS]
+    print(f"Insieme di dati: {corpus}, {D} dimensioni.")
+    print(f"Indice iniziale: {N0} testi, dal {doc_dates[0]} al {doc_dates[N0 - 1]}.")
+    print(f"{ROUNDS} giri da {CHUNK} testi, fino al {doc_dates[-1]}. {K} liste, {len(SEEDS)} seed dell'algoritmo.")
+    print(f"Recall@{TOP} leggendo lo 0,1% e l'1% dell'indice. Mediana su {len(SEEDS)} seed. Gli intervalli sono in results/SINTESI.md.\n")
+    runs, arrays = [], {}
+    for seed in SEEDS:
+        out, per_query = run(seed, docs, doc_dates, queries, query_dates)
+        runs.append(out)
+        arrays.update({f"{seed}|{key}": value for key, value in per_query.items()})
     med = lambda name, r, key: np.median([run_[name][r][key] for run_ in runs])
-    spread = lambda name, r, key: (min(run_[name][r][key] for run_ in runs), max(run_[name][r][key] for run_ in runs))
     for r in REPORT:
-        any_row = runs[0][REFERENCE][r]
+        row = runs[0][REFERENCE][r]
         print(
             f"\n### Dopo {r} gir{'o' if r == 1 else 'i'} (indice fino al {doc_dates[N0 + r * CHUNK - 1]}; "
-            f"{any_row['interrogazioni']} interrogazioni, di cui {any_row['interrogazioni aggiunte']} del periodo aggiunto)\n"
+            f"{row['interrogazioni']} interrogazioni, di cui {row['interrogazioni aggiunte']} del periodo aggiunto)\n"
         )
-        print("| Strategia | Errore nelle liste | Recall | [min; max] | Recall, periodo iniziale | Recall, periodo aggiunto |")
-        print("|---|---|---|---|---|---|")
+        print("| Strategia | Errore nelle liste | Recall, 0,1% letto | Recall, 1% letto | Recall 1%, periodo aggiunto |")
+        print("|---|---|---|---|---|")
         for name in runs[0]:
-            if r not in runs[0][name]:
-                continue
-            low, high = spread(name, r, "recall")
-            print(
-                f"| {name} | {med(name, r, 'errore'):+.2f}% | {med(name, r, 'recall'):.3f} | [{low:.3f}; {high:.3f}] | "
-                f"{med(name, r, 'recall iniziale'):.3f} | {med(name, r, 'recall aggiunto'):.3f} |"
-            )
-    print(f"\n### Ricalcolo completo sull'indice finale, implementazioni di Faiss ({faiss.omp_get_max_threads()} thread)\n")
-    print("Una misura per seed, nell'ordine della tabella, nello stesso processo. Errore sui dati di addestramento.\n")
-    rebuilds = [full_rebuild(docs, seed) for seed in SEEDS]
-    print("| Metodo | Tempo mediano | Errore mediano |")
-    print("|---|---|---|")
-    for name in rebuilds[0]:
-        print(f"| {name} | {np.median([r[name][0] for r in rebuilds]):.1f} s | {np.median([r[name][1] for r in rebuilds]):.4f} |")
-    Path(f"results/exp_real_{corpus}.json").write_text(json.dumps({"esecuzioni": runs, "ricalcolo": rebuilds}))
+            if r in runs[0][name]:
+                print(
+                    f"| {name} | {med(name, r, 'errore'):+.2f}% | {med(name, r, 'recall 0.1%'):.3f} | "
+                    f"{med(name, r, 'recall 1.0%'):.3f} | {med(name, r, 'recall aggiunto'):.3f} |"
+                )
+    Path(f"results/exp_real_{corpus}.json").write_text(json.dumps(runs))
+    np.savez_compressed(f"results/exp_real_{corpus}.npz", **arrays)

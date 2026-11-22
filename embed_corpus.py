@@ -5,11 +5,13 @@
          (gfissore/arxiv-abstracts-2021). La data viene dall'identificativo AAMM.numero;
          gli articoli con identificativo del vecchio tipo, precedenti all'aprile 2007, sono esclusi.
 
-Modello: sentence-transformers/all-MiniLM-L6-v2, 384 dimensioni, vettori normalizzati;
-i testi oltre 256 token sono troncati. Scrive data/<corpus>_embeddings.npy e
-data/<corpus>_dates.npy, in ordine di data.
+Modelli: "minilm", sentence-transformers/all-MiniLM-L6-v2, 384 dimensioni (predefinito);
+"bge", BAAI/bge-base-en-v1.5, 768 dimensioni. Vettori normalizzati; i testi oltre
+256 token sono troncati con entrambi. Scrive data/<nome>_embeddings.npy e
+data/<nome>_dates.npy, in ordine di data, con nome = corpus per minilm e
+corpus-bge per bge.
 
-Uso: uv run --group real embed_corpus.py news|arxiv
+Uso: uv run --group real embed_corpus.py news|arxiv [minilm|bge]
 """
 
 import sys
@@ -43,14 +45,17 @@ def arxiv():
 
 if __name__ == "__main__":
     corpus = sys.argv[1]
+    key = sys.argv[2] if len(sys.argv) > 2 else "minilm"
+    name = corpus if key == "minilm" else f"{corpus}-{key}"
     texts, dates = {"news": news, "arxiv": arxiv}[corpus]()
     assert (dates[1:] >= dates[:-1]).all()
     print(f"{len(texts)} testi dal {dates[0]} al {dates[-1]}; lunghezza mediana {int(np.median([len(t) for t in texts]))} caratteri")
     years, counts = np.unique(dates.astype("datetime64[Y]"), return_counts=True)
     print(", ".join(f"{y}: {c}" for y, c in zip(years, counts)))
-    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+    model = SentenceTransformer({"minilm": "sentence-transformers/all-MiniLM-L6-v2", "bge": "BAAI/bge-base-en-v1.5"}[key])
+    model.max_seq_length = 256
     embeddings = model.encode(texts, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
     Path("data").mkdir(exist_ok=True)
-    np.save(f"data/{corpus}_embeddings.npy", embeddings.astype(np.float32))
-    np.save(f"data/{corpus}_dates.npy", dates)
+    np.save(f"data/{name}_embeddings.npy", embeddings.astype(np.float32))
+    np.save(f"data/{name}_dates.npy", dates)
     print("salvati", embeddings.shape)

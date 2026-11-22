@@ -7,3 +7,5 @@ emeans_2d.gif
 _bmad/config.user.toml
 # dati scaricati e embedding, rigenerabili con embed_corpus.py
 data/
+# sorgenti di terzi scaricati per sola lettura (Faiss main)
+vendor/
