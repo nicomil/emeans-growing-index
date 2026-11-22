@@ -5,5 +5,5 @@ __pycache__/
 emeans_2d.gif
 # impostazioni personali di BMAD
 _bmad/config.user.toml
-# dati scaricati e embedding, rigenerabili con embed_news.py
+# dati scaricati e embedding, rigenerabili con embed_corpus.py
 data/

@@ -1,8 +1,9 @@
 """Passo 5: gli stessi confronti su embedding veri, con il recall di una ricerca.
 
-Corpus: titoli e sommari HuffPost dal 2012 al 2022, in ordine di data (embed_news.py).
-L'indice parte dai primi 100.000 articoli e ne riceve altri 100.000 in dieci giri
-da 10.000, sempre in ordine di data: la deriva è quella vera delle notizie.
+Corpus (embed_corpus.py): "news", titoli e sommari HuffPost 2012-2022, oppure
+"arxiv", titolo e abstract di articoli arXiv 2007-2021. L'indice parte dai primi
+100.000 testi e ne riceve altri 100.000 in dieci giri da 10.000, sempre in ordine
+di data: la deriva è quella vera del corpus.
 
 Misure, a ogni giro riportato:
   errore nelle liste: ogni articolo resta nella lista in cui è stato inserito
@@ -24,11 +25,12 @@ il resto è il costo di centroidi tarati su metà dei dati.
 Alla fine confronta anche il ricalcolo completo: e-means a 3 epoche contro
 k-means classico a 25, con i tempi delle implementazioni di Faiss.
 
-Uso: uv run --group real embed_news.py      (una volta)
-     uv run exp_real.py > results/exp_real.md
+Uso: uv run --group real embed_corpus.py news      (una volta per corpus)
+     uv run exp_real.py news > results/exp_real_news.md
 """
 
 import json
+import sys
 import time
 from pathlib import Path
 
@@ -101,9 +103,9 @@ def assign_scores(queries, centroids):
     return (centroids**2).sum(1)[None, :] - 2.0 * queries @ centroids.T
 
 
-def load():
-    x = np.load("data/news_embeddings.npy")
-    dates = np.load("data/news_dates.npy")
+def load(corpus="news"):
+    x = np.load(f"data/{corpus}_embeddings.npy")
+    dates = np.load(f"data/{corpus}_dates.npy")
     assert x.shape[1] == D and len(x) == len(dates) >= N0 + ROUNDS * CHUNK + N_QUERIES
     assert (dates[1:] >= dates[:-1]).all(), "gli articoli devono essere in ordine di data"
     held = np.zeros(len(x), dtype=bool)
@@ -180,7 +182,9 @@ def full_rebuild(docs, seed):
 
 
 if __name__ == "__main__":
-    docs, doc_dates, queries, query_dates = load()
+    corpus = sys.argv[1] if len(sys.argv) > 1 else "news"
+    docs, doc_dates, queries, query_dates = load(corpus)
+    print(f"Corpus: {corpus}.")
     print(f"Indice iniziale: {N0} articoli, dal {doc_dates[0]} al {doc_dates[N0 - 1]}.")
     print(f"{ROUNDS} giri da {CHUNK} articoli, fino al {doc_dates[-1]}. {K} liste, {len(SEEDS)} seed dell'algoritmo, un solo corpus.")
     print(f"Recall@{TOP} leggendo l'{SELECTIVITY:.0%} dell'indice. Mediana su {len(SEEDS)} seed; [min; max] è la sola variabilità dell'algoritmo.")
@@ -211,4 +215,4 @@ if __name__ == "__main__":
     print("|---|---|---|")
     for name in rebuilds[0]:
         print(f"| {name} | {np.median([r[name][0] for r in rebuilds]):.1f} s | {np.median([r[name][1] for r in rebuilds]):.4f} |")
-    Path("results/exp_real.json").write_text(json.dumps({"esecuzioni": runs, "ricalcolo": rebuilds}))
+    Path(f"results/exp_real_{corpus}.json").write_text(json.dumps({"esecuzioni": runs, "ricalcolo": rebuilds}))
