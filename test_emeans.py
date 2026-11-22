@@ -142,3 +142,16 @@ def test_constant_small_step_with_count_mass_is_the_online_mean(monkeypatch):
     assert np.abs(run() - expected).max() > 1e-2  # coseno: i punti nuovi pesano meno
     monkeypatch.setattr(module, "ALPHA_MIN_FACTOR", 1.0)
     assert np.abs(run() - expected).max() < 1e-3
+
+
+def test_rule_fit_recovers_a_known_rule():
+    from exp_rule import MASSES, fit, predict
+
+    target = lambda signal: 0.1 * signal**-0.5  # log m = log 0,1 − 0,5 · log(segnale)
+    curve = lambda signal: 1 + (np.log(MASSES) - np.log(target(signal))) ** 2
+    # Segnali scelti perché le masse giuste (1; 0,2; 0,1) cadano sulla griglia: tra un punto
+    # e l'altro la curva è interpolata, quindi la taratura non distingue masse intermedie.
+    signals = (0.01, 0.25, 1.0)
+    scenarios = [(signal, f, curve(signal)) for signal in signals for f in (0.05, 0.5)]
+    fitted = fit(scenarios)["dal segnale"]
+    assert all(predict(fitted, s, 0.2) == pytest.approx(target(s), rel=0.15) for s in signals)

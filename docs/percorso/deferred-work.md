@@ -25,3 +25,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-solo-punti-nuovi.md`
   summary: Riferimento più solido per i dati a gruppi netti (migliore di più ripartenze o Lloyd fino a convergenza).
   evidence: Sui gruppi netti il riferimento a 10 epoche cambia dell'8-13% tra due seed dello stesso insieme di dati e viene battuto del 20% da una epoca a caldo.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4b-regola-della-massa.md`
+  summary: Provare un segnale di deriva per cluster o per quantili, al posto della media globale.
+  evidence: Due scenari con lo stesso segnale medio (0,36) vogliono masse 0,02 e 0,5. Una tabella per scenario scelta sugli insiemi di taratura raggiunge l'oracolo, quindi il margine dipende dalla forma della regola e non dal rumore.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4b-regola-della-massa.md`
+  summary: Valutare la regola dalla quota su quote e livelli di deriva non usati nella taratura, con masse sotto 0,01 e griglia più fitta.
+  evidence: Taratura e valutazione condividono i 15 scenari; in quattro casi la curva dell'errore scende ancora al bordo inferiore della griglia.
