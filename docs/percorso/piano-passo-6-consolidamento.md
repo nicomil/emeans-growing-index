@@ -73,6 +73,7 @@ Fuori dal piano, di proposito: massa per cluster, riassegnazione locale, legge d
 
 Struttura proposta:
 
+0. Cappello di contesto, per chi non lavora con questi indici: cos'è un sistema RAG e dove sta l'indice vettoriale; i due modi di costruirlo, a grafo (HNSW) e a cluster (IVF); pregi e limiti di ciascuno e a che scala si usa l'uno o l'altro; dove si colloca questo studio (solo indici a cluster) e cosa cambia per chi usa HNSW.
 1. Cosa promette e-means e cosa abbiamo voluto verificare.
 2. Replica su testo reale e su un portatile: tempi, errore, recall.
 3. Quanto costa non aggiornare un indice: la deriva misurata.
