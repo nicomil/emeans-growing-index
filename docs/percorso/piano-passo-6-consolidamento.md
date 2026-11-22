@@ -35,14 +35,14 @@ Riscrivere sintesi, soluzione e criteri di successo del brief sulla base dei ris
 
 - Fatto quando: il brief descrive lo studio che scriveremo, e tu lo riconosci come tuo.
 
-### 6.1 Verificare l'avviso con il codice di Faiss (1 ora) — bloccante
+### 6.1 Verificare l'avviso con il codice di Faiss — fatto, confermato (vedi `letteratura-recente.md`)
 
 Il risultato 2 è il più utile al lettore ed è stato misurato con `emeans.py`, la nostra riscrittura. Va ripetuto chiamando direttamente `NumpyEmeans.train(nuovi, init_centroids=vecchi)` di Faiss sugli embedding veri.
 
 - Fatto quando: il recall con il codice di Faiss è riportato accanto al nostro.
 - Se Faiss non mostra il crollo: il risultato 2 diventa "un'implementazione fedele all'algoritmo del paper lo mostra, quella distribuita no", e va capito perché prima di scrivere una riga.
 
-### 6.2 Controllare la letteratura recente (1 ora) — bloccante
+### 6.2 Controllare la letteratura recente — fatto, tema non coperto (vedi `letteratura-recente.md`)
 
 Cercare lavori usciti dopo il 6 novembre 2026 su e-means in scenari incrementali, a caldo o con deriva, e le discussioni nel repository di Faiss. Rileggere come DeDrift, Ada-IVF e SPFresh misurano la deriva, per usare gli stessi termini.
 
@@ -93,12 +93,12 @@ Revisione del testo con `bmad-review` (struttura e prosa) e una verifica che ogn
 
 - Fatto quando: nessun numero del testo è privo di fonte nel repository.
 
-## Decisioni che spettano a te
+## Decisioni prese (22 novembre 2026)
 
-1. **Lingua e sede.** Raccomando un articolo in italiano sul blog o sui canali Aulab, con versione inglese solo se 6.2 conferma che il tema è scoperto. In alternativa: nota tecnica in inglese su arXiv, che richiede 6.3 e 6.4 più rigorosi e il confronto con la letteratura oggi fuori dal piano.
-2. **Repository pubblico o no.** Raccomando pubblico: la riproducibilità è metà del valore di uno studio così.
-3. **Quanto spazio alle strade abbandonate.** Raccomando una sezione nel corpo del testo (la 5), non un'appendice.
-4. **Secondo corpus.** Raccomando arXiv. Un corpus italiano sarebbe più originale ma richiede un modello di embedding multilingue e una fonte con date affidabili: aggiungerebbe una variabile.
+1. **Lingua e sede:** per ora italiano.
+2. **Repository:** pubblico, ma più avanti.
+3. **Strade abbandonate:** una sezione nel corpo del testo, non un'appendice.
+4. **Secondo corpus:** abstract di arXiv.
 
 ## Stima
 
