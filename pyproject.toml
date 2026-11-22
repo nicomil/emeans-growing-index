@@ -10,3 +10,7 @@ dev = [
     "faiss-cpu==1.16.0",
     "pytest",
 ]
+real = [
+    "datasets>=5.2.0",
+    "sentence-transformers>=6.3.0",
+]

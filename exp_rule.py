@@ -80,10 +80,11 @@ def make(config, fraction, drift, seed):
 
 
 def warm(added, centroids, counts, m, seed):
-    batch = batch_law(len(added), K, 1, D)
-    alpha0 = min(step_law(len(added), K, 1, batch) * STEP_FACTOR, 1.0)
+    k, d = centroids.shape
+    batch = batch_law(len(added), k, 1, d)
+    alpha0 = min(step_law(len(added), k, 1, batch) * STEP_FACTOR, 1.0)
     return emeans(
-        added, K, epochs=1, seed=seed, init=centroids, tau=0, alpha0=alpha0,
+        added, k, epochs=1, seed=seed, init=centroids, tau=0, alpha0=alpha0,
         init_mass=np.maximum(m * alpha0 * counts, INIT_MASS), finalize=False,
     )
 

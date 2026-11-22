@@ -77,7 +77,7 @@ def online_mean(added, centroids, old_counts, batch, seed):
     for start in range(0, len(added), batch):
         points = added[order[start : start + batch]]
         labels, _ = assign(points, current)
-        n = np.bincount(labels, minlength=K)
+        n = np.bincount(labels, minlength=len(current))
         sums = np.zeros_like(current)
         np.add.at(sums, labels, points)
         hit = n > 0
