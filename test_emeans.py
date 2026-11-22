@@ -155,3 +155,32 @@ def test_rule_fit_recovers_a_known_rule():
     scenarios = [(signal, f, curve(signal)) for signal in signals for f in (0.05, 0.5)]
     fitted = fit(scenarios)["dal segnale"]
     assert all(predict(fitted, s, 0.2) == pytest.approx(target(s), rel=0.15) for s in signals)
+
+
+def test_recall_budget_mode_matches_brute_force(monkeypatch):
+    # La funzione di recall degli esperimenti, contro una versione ovvia e lenta.
+    import exp_real
+
+    rng = np.random.default_rng(0)
+    k, top = 16, exp_real.TOP
+    monkeypatch.setattr(exp_real, "K", k)
+    index = rng.normal(size=(600, 8)).astype(np.float32)
+    index /= np.linalg.norm(index, axis=1, keepdims=True)
+    queries = index[:40] + 0.05 * rng.normal(size=(40, 8)).astype(np.float32)
+    centroids = index[rng.choice(600, k, replace=False)].astype(np.float64)
+    centroids[3] = centroids[4]  # centroidi quasi coincidenti, come dopo una rianimazione
+    labels = assign(index.astype(np.float64), centroids)[0]
+    labels[labels == 7] = 6  # una lista vuota
+    threshold = exp_real.tenth_score(index, queries)
+    budgets = (0.05, 0.2)
+    found = exp_real.recall(index, labels, centroids, queries, threshold, budgets=budgets)
+
+    within = np.lexsort((np.random.default_rng(0).random(len(labels)), labels))  # stesso ordine dentro le liste
+    for i, query in enumerate(queries):
+        distance = ((centroids - query) ** 2).sum(1)
+        scanned = np.concatenate([within[labels[within] == j] for j in np.argsort(distance, kind="stable")])
+        for b, budget in enumerate(budgets):
+            read = scanned[: int(budget * len(index))]
+            expected = min(int((index[read] @ query >= threshold[i] - 1e-6).sum()), top)
+            assert abs(int(found[b, i]) - expected) <= 1  # tolleranza per pareggi tra centroidi in float32
+    assert found[1].mean() > found[0].mean()

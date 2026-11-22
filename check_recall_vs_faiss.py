@@ -46,3 +46,4 @@ if __name__ == "__main__":
         worst = max(worst, abs(theirs - ours))
         print(f"| {nprobe} | {theirs:.4f} | {ours:.4f} | {ours - theirs:+.4f} |")
     print(f"\nScarto massimo: {worst:.4f}.")
+    assert worst < 0.002, "il nostro recall non coincide con quello di Faiss"

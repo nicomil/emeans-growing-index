@@ -1,10 +1,15 @@
-"""NumpyEmeans.train(new_rows, init_centroids=old_centroids) behaves like training on new_rows alone.
+"""e-means: init_centroids carries no weight, so a pass over new rows forgets the old centroids.
 
-Self-contained: needs only faiss-cpu >= 1.16.0 and numpy. Runs in under a minute on a laptop.
+Self-contained: needs only faiss-cpu >= 1.16.0 and numpy.
 
 Scenario: an IVF index was built on `old`. `new` rows arrive from the SAME distribution
-(no drift at all). A user refreshes the coarse centroids with one e-means pass over the
-new rows, starting from the existing centroids, then rebuilds the inverted lists.
+(no drift at all). The coarse centroids are refreshed with one pass over the new rows,
+starting from the existing centroids, and the inverted lists are rebuilt.
+
+With faiss.Kmeans the starting centroids matter: one Lloyd iteration from them stays close
+to the old solution. With NumpyEmeans the result is about as good as starting from random
+rows, or from Gaussian noise: the initial centroids get a mass of 2**-16, so the first
+batch that touches a centroid replaces it.
 
     python repro_emeans_init_centroids.py
 """
@@ -32,8 +37,9 @@ _, truth = exact.search(queries, top)
 def evaluate(centroids, target_cost=None):
     """IndexIVFFlat over all rows: recall@10, distance computations per query, quantization MSE, imbalance.
 
-    Inverted lists of unequal size make a fixed nprobe scan more vectors, so recall is
-    reported at the nprobe whose cost is closest to `target_cost` (or at `nprobe` if None).
+    Inverted lists of unequal size make a fixed nprobe scan more vectors. Recall is therefore
+    reported at the smallest nprobe whose cost reaches `target_cost`, i.e. at a cost equal to
+    or above the baseline's, which favours the row being evaluated.
     """
     centroids = np.ascontiguousarray(centroids, dtype="float32")
     quantizer = faiss.IndexFlatL2(d)
@@ -49,10 +55,13 @@ def evaluate(centroids, target_cost=None):
         cost = faiss.cvar.indexIVF_stats.ndis / n_query
         return np.mean([len(np.intersect1d(f, t)) for f, t in zip(found, truth)]) / top, cost
 
-    if target_cost is None:
-        recall, cost = search(nprobe)
-    else:
-        recall, cost = min((search(p) for p in range(1, 4 * nprobe)), key=lambda rc: abs(rc[1] - target_cost))
+    recall, cost = search(nprobe)
+    if target_cost is not None:
+        probes = 1
+        recall, cost = search(probes)
+        while cost < target_cost and probes < k:
+            probes += 1
+            recall, cost = search(probes)
     dist, labels = quantizer.search(everything, 1)
     sizes = np.bincount(labels.ravel(), minlength=k)
     return recall, cost, dist.mean(), k * (sizes.astype(float) ** 2).sum() / sizes.sum() ** 2
@@ -62,16 +71,25 @@ def emeans(x, epochs, init=None, **kwargs):
     return NumpyEmeans(d, k, nepochs=epochs, seed=0, **kwargs).train(x, init_centroids=init)[0]
 
 
+def lloyd(x, iterations, init):
+    kmeans = faiss.Kmeans(d, k, niter=iterations, seed=1, max_points_per_centroid=len(x))
+    kmeans.train(x, init_centroids=init)
+    return kmeans.centroids
+
+
 c_old = emeans(old, 5)
+noise = rng.normal(0, 1, (k, d)).astype("float32")
 rows = [
-    ("keep the old centroids (no update)", c_old),
-    ("retrain from scratch on old + new, 3 epochs", emeans(everything, 3)),
-    ("train(new, init_centroids=old centroids), 1 epoch", emeans(new, 1, init=c_old)),
-    ("same, with unused_threshold=0 (no revival)", emeans(new, 1, init=c_old, unused_threshold=0)),
-    ("train(new) from random rows of new, 1 epoch", emeans(new, 1)),
+    ("old centroids, not updated", c_old),
+    ("from scratch on old + new: e-means, 3 epochs", emeans(everything, 3)),
+    ("k-means on new, init = old centroids, 1 iteration", lloyd(new, 1, c_old)),
+    ("e-means on new, init = old centroids, 1 epoch", emeans(new, 1, init=c_old)),
+    ("  same, unused_threshold=0 (no revival)", emeans(new, 1, init=c_old, unused_threshold=0)),
+    ("e-means on new, init = random rows of new, 1 epoch", emeans(new, 1)),
+    ("e-means on new, init = Gaussian noise, 1 epoch", emeans(new, 1, init=noise)),
 ]
 print(f"faiss {faiss.__version__}: d={d}, k={k}, {n_old} old rows, {n_new} new rows from the same distribution")
-print(f"IndexIVFFlat over all {len(everything)} rows; recall@{top} at equal search cost (distance computations per query)\n")
+print(f"IndexIVFFlat over all {len(everything)} rows; recall@{top} at a search cost >= that of the first row\n")
 _, budget, _, _ = evaluate(c_old)
 for name, centroids in rows:
     recall, cost, mse, imbalance = evaluate(centroids, budget)

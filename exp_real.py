@@ -13,7 +13,11 @@ Misure, ai giri riportati:
                       e 1%); si conta quanti candidati sono vicini almeno quanto il
                       decimo vero, così duplicati e pareggi non contano come errori
 Per le strategie sui soli testi nuovi si misura anche cosa succede riassegnando
-tutti i vettori ai centroidi aggiornati, come farebbe chi ricostruisce le liste.
+tutti i vettori ai centroidi aggiornati ("+ liste ricostruite"). La ricostruzione è
+fatta una volta sola, al giro riportato, sui centroidi ottenuti senza mai
+ricostruire prima: non è la stessa cosa che ricostruire dopo ogni aggiornamento.
+Quando il limite di lettura cade dentro una lista, i suoi testi sono letti in
+ordine casuale, così i più recenti non sono svantaggiati.
 
 Le interrogazioni sono testi del corpus, non domande di utenti: il recall vale per
 "trova testi simili". Si usano solo quelle datate entro il periodo coperto
@@ -22,6 +26,14 @@ dall'indice, quindi il loro numero cresce a ogni giro.
 Scompone le cause del danno dell'uso ingenuo di e-means (centroidi vecchi come
 partenza, addestramento sui soli testi nuovi) accendendo e spegnendo tre cose:
 la massa iniziale dei centroidi, la rianimazione dei cluster, le medie finali.
+Le tre cose interagiscono: senza massa la rianimazione ricicla centinaia di centroidi
+validi, con la massa solo le liste davvero piccole; con le medie finali la massa
+conta poco. La tabella va letta per combinazioni, non come somma di tre effetti.
+
+"Massa" ha due unità. Nella scomposizione e nei soli testi nuovi è passo × numero
+di testi della lista: il primo aggiornamento equivale alla media con i conteggi veri.
+Nelle strategie che rileggono tutto è la massa a regime, batch × quota della lista:
+quella che il centroide avrebbe in una corsa già avviata.
 
 Controllo senza deriva: gli stessi testi in ordine casuale, indice mai aggiornato.
 
@@ -58,7 +70,13 @@ ONLINE = "mini-batch k-means dalle dimensioni delle liste"
 TUNED = "e-means: massa 0,2, passo/4, senza rianimazione né medie finali"
 REFERENCE = "da zero, 10 epoche (riferimento)"
 CONTROL = "mai aggiornare, testi in ordine casuale (controllo senza deriva)"
-WARM = {"a caldo, 1 epoca a giro": (1, False), "a caldo, 3 epoche a giro": (3, False), "a caldo con massa, 3 epoche a giro": (3, True)}
+# nome: (epoche, massa a regime, medie finali). Rileggono tutto a ogni giro, ripartendo dai propri centroidi.
+WARM = {
+    "a caldo, 1 epoca a giro": (1, False, True),
+    "a caldo, 3 epoche a giro": (3, False, True),
+    "a caldo con massa a regime, 3 epoche a giro": (3, True, True),
+    "a caldo con massa a regime, senza medie finali, 3 epoche a giro": (3, True, False),
+}
 COLD = {"da zero, 1 epoca": 1, "da zero, 3 epoche": 3, REFERENCE: 10}
 
 
@@ -108,7 +126,8 @@ def recall(index, labels, centroids, queries, threshold, budgets=BUDGETS, nprobe
     Restituisce interi tra 0 e TOP, di forma (quote, interrogazioni). Con nprobe si
     sondano invece esattamente nprobe liste intere (serve al confronto con Faiss).
     """
-    order = np.argsort(labels, kind="stable")
+    # dentro ogni lista i testi sono in ordine casuale: una lista letta in parte non favorisce i più vecchi
+    order = np.lexsort((np.random.default_rng(0).random(len(labels)), labels))
     ends = np.cumsum(np.bincount(labels, minlength=K))
     starts = ends - np.bincount(labels, minlength=K)
     ranking = np.argsort(assign_scores(queries, centroids), axis=1)
@@ -163,13 +182,13 @@ def run(seed, docs, doc_dates, queries, query_dates):
             counts = np.bincount(labels, minlength=K).astype(np.float64)
             centroids = update(centroids, counts, added, 1000 * seed + r)
             state[name] = centroids, np.concatenate([labels, assign_all(added, centroids)[0]])
-        for name, (epochs, with_mass) in WARM.items():
+        for name, (epochs, with_mass, closing) in WARM.items():
             centroids, labels = state[name]
             init_mass = INIT_MASS
             if with_mass:  # massa che i centroidi avrebbero in una corsa già a regime
                 batch = batch_law(n, K, epochs, D)
                 init_mass = np.maximum(batch * np.bincount(labels, minlength=K) / n, INIT_MASS)
-            centroids = emeans(seen, K, epochs=epochs, seed=1000 * seed + r, init=centroids, init_mass=init_mass)
+            centroids = emeans(seen, K, epochs=epochs, seed=1000 * seed + r, init=centroids, init_mass=init_mass, finalize=closing)
             state[name] = centroids, assign_all(seen, centroids)[0]
         if r not in REPORT:
             continue
@@ -204,6 +223,7 @@ def run(seed, docs, doc_dates, queries, query_dates):
     order = np.random.default_rng(seed).permutation(len(docs))
     centroids = emeans(docs64[order[:N0]], K, epochs=5, seed=seed)
     measure(CONTROL, docs[order], docs64[order], centroids, assign_all(docs64[order], centroids)[0])
+    out[CONTROL][ROUNDS]["recall aggiunto"] = float("nan")  # in ordine casuale la data non distingue nulla
     return out, per_query
 
 
@@ -219,6 +239,9 @@ if __name__ == "__main__":
         out, per_query = run(seed, docs, doc_dates, queries, query_dates)
         runs.append(out)
         arrays.update({f"{seed}|{key}": value for key, value in per_query.items()})
+        # si salva dopo ogni seed: un arresto a metà non perde il lavoro fatto
+        Path(f"results/exp_real_{corpus}.json").write_text(json.dumps(runs))
+        np.savez_compressed(f"results/exp_real_{corpus}.npz", **arrays)
     med = lambda name, r, key: np.median([run_[name][r][key] for run_ in runs])
     for r in REPORT:
         row = runs[0][REFERENCE][r]
@@ -232,7 +255,5 @@ if __name__ == "__main__":
             if r in runs[0][name]:
                 print(
                     f"| {name} | {med(name, r, 'errore'):+.2f}% | {med(name, r, 'recall 0.1%'):.3f} | "
-                    f"{med(name, r, 'recall 1.0%'):.3f} | {med(name, r, 'recall aggiunto'):.3f} |"
+                    f"{med(name, r, 'recall 1.0%'):.3f} | {'—' if name == CONTROL else format(med(name, r, 'recall aggiunto'), '.3f')} |"
                 )
-    Path(f"results/exp_real_{corpus}.json").write_text(json.dumps(runs))
-    np.savez_compressed(f"results/exp_real_{corpus}.npz", **arrays)
