@@ -29,7 +29,7 @@ Trasformare i risultati in uno studio pubblicabile, dopo aver chiuso i tre punti
 
 Ogni attività ha un criterio di uscita. Se un criterio fallisce, il piano dice cosa cambia.
 
-### 6.0 Riallineare il brief (30 minuti, serve la tua approvazione)
+### 6.0 Riallineare il brief — fatto, approvato il 23 novembre 2026 con filo ibrido
 
 Riscrivere sintesi, soluzione e criteri di successo del brief sulla base dei risultati. Le ipotesi abbandonate restano nel registro delle decisioni.
 
@@ -77,14 +77,15 @@ Struttura proposta:
 1. Cosa promette e-means e cosa abbiamo voluto verificare.
 2. Replica su testo reale e su un portatile: tempi, errore, recall.
 3. Quanto costa non aggiornare un indice: la deriva misurata.
-4. L'avviso: l'uso incrementale ovvio e perché rompe l'indice (massa iniziale nulla, rianimazione dei cluster).
-5. Le scorciatoie che non funzionano: massa ridotta, regola dal segnale, e l'errore di misura che ci aveva fatto credere il contrario.
-6. Cosa fare in pratica: ricalcolare, con quante epoche, ogni quanto.
-7. Limiti e lavoro futuro.
+4. "Ho già dei centroidi buoni, posso riusarli?" Primo modo, il più ovvio: addestrare e-means sui soli documenti nuovi. Perché rompe l'indice (massa iniziale nulla, rianimazione dei cluster).
+5. Secondo modo: dare un peso ai centroidi vecchi. Massa ridotta, regola dal segnale, e l'errore di misura che ci aveva fatto credere a un vantaggio.
+6. Terzo modo: riusarli rileggendo tutto. Cosa cambia nell'errore e cosa no nella ricerca.
+7. Cosa fare in pratica: ricalcolare, con quante epoche, ogni quanto.
+8. Limiti e lavoro futuro.
 
 Figure: tempo contro errore per i due algoritmi; recall nel tempo per strategia; l'animazione 2D come illustrazione del meccanismo; recall prima e dopo l'uso ingenuo.
 
-La sezione 5 è il punto che distingue lo studio da un riassunto del paper: racconta anche le conclusioni ritirate dopo revisione.
+Le sezioni 4-6 seguono il filo della partenza a caldo; la 5 è il punto che distingue lo studio da un riassunto del paper: racconta anche le conclusioni ritirate dopo revisione.
 
 - Fatto quando: esiste una bozza completa e un README che permette di rifare ogni tabella con un comando.
 
