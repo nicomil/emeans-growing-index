@@ -1,0 +1,12 @@
+[project]
+name = "rag-emean"
+version = "0.1.0"
+description = "Studio sulla partenza a caldo di e-means"
+requires-python = ">=3.11"
+dependencies = ["numpy", "matplotlib"]
+
+[dependency-groups]
+dev = [
+    "faiss-cpu==1.16.0",
+    "pytest",
+]
