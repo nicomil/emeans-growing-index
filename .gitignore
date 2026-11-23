@@ -9,3 +9,6 @@ _bmad/config.user.toml
 data/
 # sorgenti di terzi scaricati per sola lettura (Faiss main)
 vendor/
+.archify/
+docs/*.finalize*.json
+docs/*.delivery*.json
