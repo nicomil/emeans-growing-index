@@ -106,4 +106,4 @@ La revisione "da manutentore" ha mostrato che la prima stesura sarebbe stata liq
 
 ## Stato della coda al momento della scrittura
 
-STATO_CODA
+Alle 04:45 la prima parte della coda è finita senza lavori falliti (tre insiemi di dati: esperimento, controllo, tempi). È in corso l'embedding di arXiv con il modello a 768 dimensioni, partito alle 03:53; seguono il suo esperimento, il controllo e i tempi. Se al mattino `data/night.log` termina con "CODA FINITA", i risultati del quarto insieme sono in `results/SINTESI.md`; altrimenti lì compare "Risultati mancanti" e nulla di ciò che è scritto sopra ne dipende.

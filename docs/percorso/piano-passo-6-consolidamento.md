@@ -49,7 +49,7 @@ Cercare lavori usciti dopo il 6 novembre 2026 su e-means in scenari incrementali
 - Fatto quando: c'è un elenco di lavori con una riga ciascuno su cosa coprono e cosa no.
 - Se qualcuno ha già pubblicato gli stessi risultati: lo studio si presenta come replica indipendente su testo e su portatile, non come novità.
 
-### 6.3 Secondo corpus (mezza giornata)
+### 6.3 Secondo corpus — fatto (vedi `spec-6-consolidamento.md`)
 
 Tutto il risultato su dati veri poggia su HuffPost: testi brevi, un solo dominio. Ripetere `exp_real.py` su abstract di arXiv (`gfissore/arxiv-abstracts-2021`, la data si ricava dall'identificativo): testi più lunghi, vicini ai pezzi di documento di un sistema RAG, e deriva tematica forte.
 
@@ -57,7 +57,7 @@ Tutto il risultato su dati veri poggia su HuffPost: testi brevi, un solo dominio
 - Fatto quando: la tabella del passo 5 esiste per entrambi i corpus.
 - Se un risultato non si ripete: si riporta così, con il corpus su cui vale.
 
-### 6.4 Tre rinforzi alla misura (mezza giornata)
+### 6.4 Rinforzi alla misura — fatto, con in più un secondo modello di embedding
 
 Solo quelli che toccano i quattro risultati principali:
 
@@ -69,7 +69,7 @@ Solo quelli che toccano i quattro risultati principali:
 
 Fuori dal piano, di proposito: massa per cluster, riassegnazione locale, legge di scala, confronto diretto con DeDrift o SPFresh, corpus italiano. Vanno citati come lavoro futuro.
 
-### 6.5 Scrivere (un giorno)
+### 6.5 Scrivere — fatte le bozze del post e della segnalazione; l'articolo lungo resta da scrivere
 
 Struttura proposta:
 
@@ -89,7 +89,7 @@ Le sezioni 4-6 seguono il filo della partenza a caldo; la 5 è il punto che dist
 
 - Fatto quando: esiste una bozza completa e un README che permette di rifare ogni tabella con un comando.
 
-### 6.6 Revisione finale (2 ore)
+### 6.6 Revisione finale — fatta sui due testi brevi, due passaggi
 
 Revisione del testo con `bmad-review` (struttura e prosa) e una verifica che ogni numero del testo coincida con i file in `results/`.
 
