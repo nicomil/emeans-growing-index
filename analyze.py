@@ -131,7 +131,7 @@ def report(name, label):
         records = json.loads(bench.read_text())
         med = lambda method, amount, key: float(np.median([x[key] for x in records if x["metodo"] == method and x["passate"] == amount]))
         amounts = lambda method: sorted({x["passate"] for x in records if x["metodo"] == method})
-        print("\nRicalcolo completo, implementazioni di Faiss (mediana di 5 ripetizioni):\n")
+        print("\nAddestramento dei centroidi sui 200.000 testi, implementazioni di Faiss (mediana di 6 ripetizioni; la riassegnazione dei vettori non è compresa nel tempo):\n")
         print("| Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |")
         print("|---|---|---|---|---|---|")
         for method in ("e-means", "k-means"):

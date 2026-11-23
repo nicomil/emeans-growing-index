@@ -58,7 +58,7 @@ Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecc
 
 Per confronto, dopo 10 giri: mai aggiornare 0.781; riferimento 0.843.
 
-Ricalcolo completo, implementazioni di Faiss (mediana di 5 ripetizioni):
+Addestramento dei centroidi sui 200.000 testi, implementazioni di Faiss (mediana di 6 ripetizioni; la riassegnazione dei vettori non è compresa nel tempo):
 
 | Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |
 |---|---|---|---|---|---|
@@ -139,7 +139,7 @@ Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecc
 
 Per confronto, dopo 10 giri: mai aggiornare 0.918; riferimento 0.945.
 
-Ricalcolo completo, implementazioni di Faiss (mediana di 5 ripetizioni):
+Addestramento dei centroidi sui 200.000 testi, implementazioni di Faiss (mediana di 6 ripetizioni; la riassegnazione dei vettori non è compresa nel tempo):
 
 | Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |
 |---|---|---|---|---|---|
@@ -220,7 +220,7 @@ Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecc
 
 Per confronto, dopo 10 giri: mai aggiornare 0.746; riferimento 0.821.
 
-Ricalcolo completo, implementazioni di Faiss (mediana di 5 ripetizioni):
+Addestramento dei centroidi sui 200.000 testi, implementazioni di Faiss (mediana di 6 ripetizioni; la riassegnazione dei vettori non è compresa nel tempo):
 
 | Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |
 |---|---|---|---|---|---|

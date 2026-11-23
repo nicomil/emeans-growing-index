@@ -16,7 +16,8 @@ Il brief del progetto è in `_bmad-output/planning-artifacts/briefs/`, i risulta
 | `exp_real.py` | Strategie di aggiornamento di un indice su embedding veri: errore e recall |
 | `bench_rebuild.py` | Tempi del ricalcolo completo, e-means contro k-means classico |
 | `check_recall_vs_faiss.py` | Verifica che il recall calcolato qui coincida con quello di un indice IVF di Faiss |
-| `check_faiss_naive.py` | L'aggiornamento ingenuo fatto con il codice di Faiss, senza modifiche |
+| `check_faiss_naive.py` | L'aggiornamento ingenuo e la sua correzione, fatti con il codice di Faiss |
+| `check_naive_baselines.py` | Lo stesso aggiornamento con k-means e con due dimensioni di aggiornamento |
 | `analyze.py` | Sintesi con intervalli di confidenza |
 | `docs/repro_emeans_init_centroids.py` | Riproduzione minima, autonoma, del comportamento di `init_centroids` |
 
@@ -44,6 +45,8 @@ uv run --group real embed_corpus.py arxiv bge      # alcune ore su un portatile
 uv run exp_real.py news > results/exp_real_news.md                  # circa 30 minuti
 uv run check_recall_vs_faiss.py news > results/check_recall_news.md
 uv run bench_rebuild.py news > results/bench_rebuild_news.md        # da solo, a macchina libera
+uv run check_faiss_naive.py news > results/check_faiss_naive_news.md
+uv run check_naive_baselines.py news > results/check_naive_baselines_news.md
 uv run analyze.py > results/SINTESI.md
 ```
 
