@@ -82,11 +82,28 @@ La revisione "da manutentore" ha mostrato che la prima stesura sarebbe stata liq
 - mostra la causa con il codice di Faiss;
 - ammette che la correzione serve a poco in pratica, perché ricalcolare è meglio: per questo la nota conta più della funzione.
 
+## La prova sul codice più recente di Faiss (aggiunta la mattina del 23, con la tua autorizzazione)
+
+Faiss compilato dai sorgenti al commit 16a95d6 del ramo principale, quello che cambia la rianimazione dei cluster, in un ambiente separato (`vendor/faiss_venv`); l'ambiente del progetto resta su 1.16.0. Un aggiornamento da 10.000 testi, liste ricostruite, recall mediano:
+
+| | Notizie, 384 dim. | arXiv, 384 dim. | Notizie, 768 dim. |
+|---|---|---|---|
+| nessun aggiornamento | 0,828 | 0,931 | 0,792 |
+| uso ingenuo, Faiss 1.16.0 | 0,417 | 0,656 | 0,332 |
+| uso ingenuo, ramo principale | 0,512 | 0,784 | 0,421 |
+| e-means da righe a caso, ramo principale | 0,495 | 0,769 | 0,396 |
+| massa iniziale e media mobile, rianimazione predefinita del ramo principale | 0,723 | 0,886 | 0,665 |
+| massa iniziale e media mobile, rianimazione per massa o spenta | 0,827 | 0,932 | 0,792 |
+
+1. **L'avviso vale anche sul codice più recente**, con numeri più lievi: il recall perde tra il 16% e il 47% (tra il 30% e il 58% in 1.16.0), e l'uso ingenuo resta pari a una partenza da righe a caso.
+2. **Una cosa nuova.** Sul ramo principale le due modifiche non bastano più: la nuova rianimazione sposta i centroidi che non hanno ancora ricevuto testi, qualunque peso abbiano. Tornando alla rianimazione per massa, o spegnendola, il danno sparisce come in 1.16.0. La segnalazione lo dice, ed è un'informazione utile per chi mantiene quel codice.
+
+Sul ramo principale sono stati rifatti solo l'aggiornamento singolo e la riproduzione sintetica, non i dieci aggiornamenti in sequenza né i tempi. File: `results/check_naive_baselines_*_main.md`, `results/check_main_revival_*.md`, `results/repro_main.md`.
+
 ## Cosa non è stato fatto
 
-1. **La prova sul codice più recente di Faiss.** Dopo il rilascio 1.16.0 il ramo principale ha cambiato la rianimazione dei cluster. Ho scaricato i sorgenti, ma il sistema ha bloccato l'esecuzione di codice appena scaricato e non ho aggirato il blocco. Inoltre quel codice richiede funzioni native che la versione installata non ha: serve compilare Faiss. Leggendo il sorgente, il peso iniziale è invariato e il risultato restituito è ancora la media dell'ultima epoca (con in più un passaggio di consegna per i centroidi rianimati), quindi mi aspetto lo stesso comportamento, ma non l'ho misurato. **È la prima cosa che i manutentori chiederanno: va fatta prima di inviare la segnalazione.**
-2. **arXiv con il secondo modello.** L'embedding di testi lunghi con il modello grande richiede alcune ore; è stato messo in coda per ultimo. Lo stato è nella sezione finale.
-3. **Scale più grandi di 200.000 vettori**, interrogazioni di utenti veri, confronto con i metodi della letteratura sulla deriva.
+1. **arXiv con il secondo modello.** L'embedding di testi lunghi con il modello grande richiede alcune ore; è stato messo in coda per ultimo. Lo stato è nella sezione finale.
+2. **Scale più grandi di 200.000 vettori**, interrogazioni di utenti veri, confronto con i metodi della letteratura sulla deriva.
 
 ## Limiti che restano
 
@@ -100,8 +117,8 @@ La revisione "da manutentore" ha mostrato che la prima stesura sarebbe stata liq
 
 ## Cosa decidere
 
-1. **Il post**: va bene il testo? Preferisci la versione lunga o la breve? Il repository va reso pubblico prima, perché il post lo cita.
-2. **La segnalazione**: la invii tu, dopo la prova sul ramo principale. Posso preparare le istruzioni per compilare Faiss, ma serve il tuo permesso per eseguire quel codice.
+1. **Il post**: scelta la versione lunga. Va bene il testo? Il repository va reso pubblico prima, perché il post lo cita.
+2. **La segnalazione**: la invii tu. La prova sul ramo principale è fatta; restano i punti della lista in testa alla bozza (incollare lo script, il link al repository, controllare che non esista già una segnalazione uguale).
 3. **L'articolo lungo** previsto dal piano: i materiali ci sono tutti; non è stato scritto questa notte.
 
 ## Stato della coda al momento della scrittura

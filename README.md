@@ -18,6 +18,7 @@ Il brief del progetto è in `_bmad-output/planning-artifacts/briefs/`, i risulta
 | `check_recall_vs_faiss.py` | Verifica che il recall calcolato qui coincida con quello di un indice IVF di Faiss |
 | `check_faiss_naive.py` | L'aggiornamento ingenuo e la sua correzione, fatti con il codice di Faiss |
 | `check_naive_baselines.py` | Lo stesso aggiornamento con k-means e con due dimensioni di aggiornamento |
+| `check_main_revival.py` | Sul ramo principale di Faiss: quanto dipende dalla rianimazione dei cluster |
 | `analyze.py` | Sintesi con intervalli di confidenza |
 | `docs/repro_emeans_init_centroids.py` | Riproduzione minima, autonoma, del comportamento di `init_centroids` |
 
@@ -52,6 +53,19 @@ uv run analyze.py > results/SINTESI.md
 
 `run_night2.sh` esegue la parte sui dati veri in fila, un lavoro alla volta.
 
+Per ripetere l'aggiornamento singolo sul ramo principale di Faiss serve compilarlo (CMake, SWIG, libomp) e usare quel Python al posto di `uv run`:
+
+```bash
+git clone https://github.com/facebookresearch/faiss.git vendor/faiss_src && cd vendor/faiss_src
+uv venv ../faiss_venv --python 3.12 && uv pip install --python ../faiss_venv/bin/python numpy setuptools
+cmake -B build -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_METAL=OFF -DFAISS_ENABLE_PYTHON=ON -DBUILD_TESTING=OFF \
+  -DFAISS_OPT_LEVEL=generic -DPython_EXECUTABLE=$PWD/../faiss_venv/bin/python -DOpenMP_ROOT=$(brew --prefix libomp) .
+cmake --build build -j4 --target faiss swigfaiss
+(cd build/faiss/python && uv pip install --python ../../../../faiss_venv/bin/python .) && cd ../..
+vendor/faiss_venv/bin/python check_naive_baselines.py news > results/check_naive_baselines_news_main.md
+vendor/faiss_venv/bin/python check_main_revival.py news > results/check_main_revival_news.md
+```
+
 Gli embedding finiscono in `data/`, che non è sotto controllo di versione: ogni file pesa da 300 a 650 MB.
 
 ## Dati e modelli
@@ -67,4 +81,4 @@ Le revisioni di dataset e modelli non sono fissate: scaricandoli in futuro i num
 - Indici da 200.000 vettori su un portatile. A scale molto più grandi il costo del ricalcolo completo cresce e le conclusioni pratiche possono cambiare.
 - Le interrogazioni sono testi del corpus tenuti fuori dall'indice, non domande di utenti.
 - I confronti sono con metodi semplici, non con quelli della letteratura sulla deriva degli indici (DeDrift, Ada-IVF, SPFresh).
-- Faiss 1.16.0. Il ramo principale di Faiss ha poi cambiato la rianimazione dei cluster: quella parte non è stata rieseguita sul codice più recente.
+- Faiss 1.16.0. Il ramo principale di Faiss ha poi cambiato la rianimazione dei cluster: lì è stato rifatto solo l'aggiornamento singolo (`results/*_main.md`, `results/check_main_revival_*.md`), con Faiss compilato dai sorgenti al commit 16a95d6.
