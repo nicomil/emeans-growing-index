@@ -62,7 +62,7 @@ Sono in `results/SINTESI.md`; il riassunto ragionato è in `docs/RAPPORTO.md`. I
 **Non fatto**
 
 - La prova sul ramo principale di Faiss non è stata fatta nella notte: il sistema ha negato l'esecuzione dei sorgenti appena scaricati e il blocco non è stato aggirato. È stata fatta la mattina del 23 novembre con l'autorizzazione dell'utente, compilando Faiss al commit 16a95d6: il danno dell'uso ingenuo resta (dal 16% al 47% di recall in meno) e, con la nuova rianimazione, massa iniziale e media mobile non bastano più a toglierlo.
-- arXiv con il secondo modello di embedding: in coda per ultimo, per via della durata dell'embedding.
+- arXiv con il secondo modello di embedding non era finito al mattino: un riavvio della macchina ha interrotto la coda. Ripresa e conclusa alle 10:35 del 23 novembre; risultati concordi con gli altri tre insiemi, riassunti in `docs/RAPPORTO.md`.
 - L'articolo lungo previsto dal piano.
 
 ## Review Triage Log

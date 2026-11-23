@@ -247,4 +247,81 @@ A parità di recall con l'1% dell'indice letto: al k-means servono tra 3 e 5 ite
 
 ## abstract arXiv, bge-base-en-v1.5 (768 dimensioni)
 
-Risultati mancanti.
+Dopo 10 giri, indice da 200.000 testi, 2900 interrogazioni. Recall@10; tra parentesi quadre l'intervallo al 95%.
+
+Periodo aggiunto: le 1511 interrogazioni datate dopo l'indice iniziale.
+
+| Strategia | Errore nelle liste | Recall, 1% letto | Recall 1%, periodo aggiunto | Recall, 0,1% letto |
+|---|---|---|---|---|
+| mai aggiornare | +4.18% | 0.928 [0.924; 0.932] | 0.916 [0.910; 0.922] | 0.546 [0.537; 0.556] |
+| mai aggiornare, testi in ordine casuale (controllo senza deriva) | +1.95% | 0.943 [0.940; 0.946] | — | 0.592 [0.584; 0.602] |
+| e-means di Faiss 1.16.0, impostazioni di serie | +211.46% | 0.064 [0.061; 0.068] | 0.080 [0.075; 0.084] | 0.029 [0.027; 0.031] |
+| e-means di Faiss 1.16.0, impostazioni di serie + liste ricostruite | +22.46% | 0.773 [0.766; 0.780] | 0.784 [0.774; 0.794] | 0.232 [0.225; 0.239] |
+| mini-batch k-means dalle dimensioni delle liste | +2.04% | 0.937 [0.934; 0.941] | 0.932 [0.927; 0.937] | 0.560 [0.550; 0.569] |
+| e-means: massa 0,2, passo/4, senza rianimazione né medie finali | +4.02% | 0.931 [0.927; 0.935] | 0.928 [0.923; 0.933] | 0.550 [0.541; 0.559] |
+| e-means: massa sì, rianimazione no, medie finali no | +2.13% | 0.938 [0.934; 0.941] | 0.933 [0.927; 0.937] | 0.559 [0.550; 0.569] |
+| da zero, 1 epoca | +2.93% | 0.938 [0.935; 0.941] | 0.938 [0.932; 0.942] | 0.565 [0.556; 0.574] |
+| a caldo, 1 epoca a giro | +2.42% | 0.939 [0.935; 0.942] | 0.940 [0.935; 0.944] | 0.573 [0.563; 0.582] |
+| da zero, 3 epoche | +0.43% | 0.946 [0.943; 0.949] | 0.946 [0.941; 0.950] | 0.606 [0.598; 0.615] |
+| a caldo, 3 epoche a giro | +0.27% | 0.947 [0.943; 0.950] | 0.946 [0.941; 0.951] | 0.613 [0.604; 0.622] |
+| a caldo con massa a regime, 3 epoche a giro | +0.10% | 0.947 [0.944; 0.950] | 0.947 [0.942; 0.951] | 0.614 [0.605; 0.624] |
+| a caldo con massa a regime, senza medie finali, 3 epoche a giro | +0.13% | 0.946 [0.943; 0.950] | 0.947 [0.942; 0.952] | 0.614 [0.604; 0.624] |
+| da zero, 10 epoche (riferimento) | +0.00% | 0.947 [0.944; 0.951] | 0.948 [0.943; 0.952] | 0.620 [0.611; 0.630] |
+
+Differenze appaiate di recall (1% letto), dopo 10 giri. L'ultima colonna è la stessa differenza calcolata seed per seed.
+
+| Confronto | Differenza [intervallo sulle interrogazioni] | Lo zero è escluso? | Tra i seed [min; max] |
+|---|---|---|---|
+| da zero, 10 epoche (riferimento) − mai aggiornare | +0.020 [+0.017; +0.022] | sì | [+0.017; +0.021] |
+| mai aggiornare, testi in ordine casuale (controllo senza deriva) − mai aggiornare | +0.015 [+0.012; +0.018] | sì | [+0.014; +0.017] |
+| mini-batch k-means dalle dimensioni delle liste − mai aggiornare | +0.009 [+0.007; +0.011] | sì | [+0.009; +0.010] |
+| e-means: massa 0,2, passo/4, senza rianimazione né medie finali − mini-batch k-means dalle dimensioni delle liste | -0.006 [-0.007; -0.004] | sì | [-0.007; -0.005] |
+| e-means: massa sì, rianimazione no, medie finali no − mini-batch k-means dalle dimensioni delle liste | +0.000 [-0.000; +0.001] | no | [+0.000; +0.001] |
+| da zero, 3 epoche − da zero, 10 epoche (riferimento) | -0.001 [-0.003; +0.000] | no | [-0.002; -0.001] |
+| a caldo, 3 epoche a giro − da zero, 3 epoche | +0.001 [-0.001; +0.002] | no | [-0.000; +0.002] |
+| a caldo con massa a regime, 3 epoche a giro − da zero, 3 epoche | +0.001 [-0.001; +0.003] | no | [-0.001; +0.003] |
+| a caldo con massa a regime, senza medie finali, 3 epoche a giro − da zero, 3 epoche | +0.000 [-0.001; +0.002] | no | [-0.001; +0.001] |
+| a caldo, 1 epoca a giro − da zero, 1 epoca | +0.001 [-0.001; +0.003] | no | [-0.001; +0.003] |
+| da zero, 1 epoca − mai aggiornare | +0.010 [+0.007; +0.013] | sì | [+0.008; +0.011] |
+| e-means di Faiss 1.16.0, impostazioni di serie + liste ricostruite − mai aggiornare | -0.155 [-0.161; -0.148] | sì | [-0.162; -0.146] |
+| e-means di Faiss 1.16.0, impostazioni di serie − e-means: massa no, rianimazione sì, medie finali sì | -0.003 [-0.005; -0.001] | sì | [-0.005; +0.000] |
+
+Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecchi. Recall con l'1% letto.
+
+| Massa iniziale | Rianimazione | Medie finali | Dopo 1 giro | Dopo 10 giri | Dopo 10 giri, liste ricostruite |
+|---|---|---|---|---|---|
+| no | sì | sì | 0.234 [0.224; 0.244] | 0.067 [0.064; 0.071] | 0.774 [0.767; 0.781] |
+| no | sì | no | 0.183 [0.175; 0.191] | 0.057 [0.054; 0.060] | 0.755 [0.748; 0.762] |
+| no | no | sì | 0.377 [0.366; 0.388] | 0.224 [0.218; 0.230] | 0.414 [0.406; 0.423] |
+| no | no | no | 0.380 [0.369; 0.392] | 0.220 [0.214; 0.226] | 0.416 [0.408; 0.425] |
+| sì | sì | sì | 0.832 [0.824; 0.841] | 0.569 [0.560; 0.578] | 0.830 [0.824; 0.837] |
+| sì | sì | no | 0.937 [0.932; 0.942] | 0.937 [0.934; 0.941] | 0.940 [0.937; 0.944] |
+| sì | no | sì | 0.832 [0.824; 0.841] | 0.569 [0.560; 0.578] | 0.831 [0.825; 0.838] |
+| sì | no | no | 0.937 [0.932; 0.942] | 0.938 [0.934; 0.941] | 0.940 [0.937; 0.944] |
+
+Per confronto, dopo 10 giri: mai aggiornare 0.928; riferimento 0.947.
+
+Addestramento dei centroidi sui 200.000 testi, implementazioni di Faiss (mediana di 6 ripetizioni; la riassegnazione dei vettori non è compresa nel tempo):
+
+| Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |
+|---|---|---|---|---|---|
+| e-means | 1 | 2.2 s | 0.2470 | 0.2514 | 0.938 |
+| e-means | 2 | 4.3 s | 0.2420 | 0.2476 | 0.945 |
+| e-means | 3 | 6.4 s | 0.2410 | 0.2470 | 0.947 |
+| e-means | 5 | 10.6 s | 0.2404 | 0.2466 | 0.948 |
+| e-means | 10 | 21.1 s | 0.2400 | 0.2461 | 0.948 |
+| k-means | 3 | 3.5 s | 0.2467 | 0.2515 | 0.940 |
+| k-means | 5 | 5.8 s | 0.2443 | 0.2497 | 0.944 |
+| k-means | 10 | 11.5 s | 0.2425 | 0.2482 | 0.946 |
+| k-means | 12 | 13.8 s | 0.2422 | 0.2480 | 0.946 |
+| k-means | 15 | 17.2 s | 0.2419 | 0.2478 | 0.947 |
+| k-means | 20 | 23.0 s | 0.2417 | 0.2476 | 0.947 |
+| k-means | 25 | 28.8 s | 0.2416 | 0.2476 | 0.947 |
+
+A parità di errore di addestramento: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (28.8 s contro 6.4 s): rapporto dei tempi superiore a 4.5.
+
+A parità di errore sui testi tenuti fuori: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (28.8 s contro 6.4 s): rapporto dei tempi superiore a 4.5.
+
+A parità di recall con lo 0,1% dell'indice letto: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (28.8 s contro 6.4 s): rapporto dei tempi superiore a 4.5.
+
+A parità di recall con l'1% dell'indice letto: al k-means servono tra 12 e 15 iterazioni, cioè tra 13.8 e 17.2 s contro 6.4 s di e-means a 3 epoche: rapporto dei tempi tra 2.1 e 2.7.

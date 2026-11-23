@@ -2,7 +2,7 @@
 
 ## In una riga
 
-I risultati reggono su tre insiemi di dati e due modelli di embedding, con misure controllate; due affermazioni che avevo fatto vanno però ridimensionate. Le bozze del post e della segnalazione sono pronte e nessuna è stata inviata.
+I risultati reggono su quattro insiemi di dati (due corpus per due modelli di embedding), con misure controllate, e sul codice più recente di Faiss; due affermazioni che avevo fatto vanno però ridimensionate. Le bozze del post e della segnalazione sono pronte e nessuna è stata inviata.
 
 ## Cosa trovi
 
@@ -100,9 +100,37 @@ Faiss compilato dai sorgenti al commit 16a95d6 del ramo principale, quello che c
 
 Sul ramo principale sono stati rifatti solo l'aggiornamento singolo e la riproduzione sintetica, non i dieci aggiornamenti in sequenza né i tempi. File: `results/check_naive_baselines_*_main.md`, `results/check_main_revival_*.md`, `results/repro_main.md`.
 
+## Il quarto insieme di dati: arXiv con il modello a 768 dimensioni
+
+Arrivato la mattina del 23: il riavvio della macchina verso le 06:11 aveva interrotto la coda, ripresa alle 09:16 e finita alle 10:35 senza lavori falliti. Le tabelle sopra restano a tre colonne; questi sono i valori della quarta, tutti concordi.
+
+| | arXiv, 768 dim. |
+|---|---|
+| Dopo dieci aggiornamenti: mai aggiornare | 0,928 |
+| stessi testi in ordine casuale | 0,943 |
+| uso ingenuo di e-means, liste ricostruite / lasciate come sono | 0,773 / 0,064 |
+| mini-batch classico sui soli testi nuovi | 0,937 |
+| ricalcolo da zero, 3 epoche / 10 epoche | 0,946 / 0,947 |
+| Un aggiornamento da 10.000 testi: nessun aggiornamento | 0,937 |
+| e-means dai centroidi vecchi, Faiss 1.16.0 / ramo principale | 0,657 / 0,785 |
+| e-means da righe a caso | 0,754 |
+| k-means, una iterazione dai centroidi vecchi | 0,889 |
+| e-means di Faiss con massa iniziale e media mobile | 0,937 |
+| Un aggiornamento da 50.000 testi: uso ingenuo contro nessun aggiornamento | 0,905 contro 0,934 |
+| Tempi: e-means 3 epoche / k-means 25 iterazioni | 6,4 s / 28,8 s |
+| A parità di recall, k-means impiega: 0,1% letto / 1% letto | oltre 4,5 volte / da 2,1 a 2,7 volte |
+
+Tre cose cambiano di poco rispetto a quanto scritto sopra:
+
+- a parità di recall con l'1% dell'indice letto, il vantaggio di e-means arriva a un fattore 2,7 (prima il massimo era 2,1): il post ora dice "tra la metà e quasi il triplo";
+- con 50.000 testi nuovi il danno dell'uso ingenuo va dal 3% al 15% (prima dal 4%);
+- il mezzo punto guadagnato dalla partenza a caldo con massa a regime a 768 dimensioni vale per le notizie; su arXiv è un decimo di punto. Tre epoche da zero arrivano a 0,1-0,7 punti dal riferimento.
+
+I tempi di questo insieme sono stati misurati di giorno, a macchina in uso: il carico registrato (mediana 2,1, massimo 5,5) è in linea con quello notturno (mediana 1,9-2,4) e gli intervalli sono altrettanto stretti (6,4 s [6,4; 6,5]).
+
 ## Cosa non è stato fatto
 
-1. **arXiv con il secondo modello.** L'embedding di testi lunghi con il modello grande richiede alcune ore; è stato messo in coda per ultimo. Lo stato è nella sezione finale.
+1. **L'articolo lungo** previsto dal piano.
 2. **Scale più grandi di 200.000 vettori**, interrogazioni di utenti veri, confronto con i metodi della letteratura sulla deriva.
 
 ## Limiti che restano
@@ -121,6 +149,6 @@ Sul ramo principale sono stati rifatti solo l'aggiornamento singolo e la riprodu
 2. **La segnalazione**: la invii tu. La prova sul ramo principale è fatta; restano i punti della lista in testa alla bozza (incollare lo script, il link al repository, controllare che non esista già una segnalazione uguale).
 3. **L'articolo lungo** previsto dal piano: i materiali ci sono tutti; non è stato scritto questa notte.
 
-## Stato della coda al momento della scrittura
+## Stato della coda
 
-Alle 04:45 la prima parte della coda è finita senza lavori falliti (tre insiemi di dati: esperimento, controllo, tempi). È in corso l'embedding di arXiv con il modello a 768 dimensioni, partito alle 03:53; seguono il suo esperimento, il controllo e i tempi. Se al mattino `data/night.log` termina con "CODA FINITA", i risultati del quarto insieme sono in `results/SINTESI.md`; altrimenti lì compare "Risultati mancanti" e nulla di ciò che è scritto sopra ne dipende.
+Finita alle 10:35 del 23 novembre, nessun lavoro fallito. Registro in `data/night.log`.
