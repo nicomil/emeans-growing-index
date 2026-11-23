@@ -4,6 +4,9 @@
   arxiv: titolo e abstract di 210.000 articoli arXiv 2007-2021, estratti a caso
          (gfissore/arxiv-abstracts-2021). La data viene dall'identificativo AAMM.numero;
          gli articoli con identificativo del vecchio tipo, precedenti all'aprile 2007, sono esclusi.
+  msmarco: 1.600.000 passaggi di MS MARCO estratti a caso e messi in ordine casuale (BeIR/msmarco).
+         Non hanno data: servono come archivio senza deriva. Insieme si calcolano i vettori di
+         3.000 domande vere di utenti, in data/msmarco_queries.npy.
   arxiv-full: come arxiv, ma tutti gli articoli (circa 1,9 milioni). Il calcolo procede a blocchi
          e, se interrotto, riparte dall'ultimo blocco finito.
 
@@ -13,7 +16,7 @@ Modelli: "minilm", sentence-transformers/all-MiniLM-L6-v2, 384 dimensioni (prede
 data/<nome>_dates.npy, in ordine di data, con nome = corpus per minilm e
 corpus-bge per bge.
 
-Uso: uv run --group real embed_corpus.py news|arxiv|arxiv-full [minilm|bge]
+Uso: uv run --group real embed_corpus.py news|arxiv|arxiv-full|msmarco [minilm|bge]
 """
 
 import sys
@@ -48,11 +51,19 @@ def arxiv(sample=210_000):
     return text.tolist(), dates.astype("datetime64[D]")
 
 
+def msmarco(sample=1_600_000):
+    data = load_dataset("BeIR/msmarco", "corpus", split="corpus")
+    keep = np.sort(np.random.default_rng(0).choice(len(data), sample, replace=False))
+    text = data.select(keep).to_pandas()["text"].str.replace(r"\s+", " ", regex=True).str.strip()
+    text = text.iloc[np.random.default_rng(1).permutation(len(text))]
+    return text.tolist(), np.full(len(text), np.datetime64("2018-01-01", "D"))
+
+
 if __name__ == "__main__":
     corpus = sys.argv[1]
     key = sys.argv[2] if len(sys.argv) > 2 else "minilm"
     name = corpus if key == "minilm" else f"{corpus}-{key}"
-    texts, dates = {"news": news, "arxiv": arxiv, "arxiv-full": lambda: arxiv(None)}[corpus]()
+    texts, dates = {"news": news, "arxiv": arxiv, "arxiv-full": lambda: arxiv(None), "msmarco": msmarco}[corpus]()
     assert (dates[1:] >= dates[:-1]).all()
     print(f"{len(texts)} testi dal {dates[0]} al {dates[-1]}; lunghezza mediana {int(np.median([len(t) for t in texts]))} caratteri")
     years, counts = np.unique(dates.astype("datetime64[Y]"), return_counts=True)
@@ -61,6 +72,10 @@ if __name__ == "__main__":
     model.max_seq_length = 256
     Path("data").mkdir(exist_ok=True)
     np.save(f"data/{name}_dates.npy", dates)
+    if corpus == "msmarco":
+        asked = load_dataset("BeIR/msmarco", "queries", split="queries")
+        asked = asked.select(np.sort(np.random.default_rng(0).choice(len(asked), 3_000, replace=False)))["text"]
+        np.save(f"data/{name}_queries.npy", model.encode(asked, batch_size=128, normalize_embeddings=True, show_progress_bar=False).astype(np.float32))
     if len(texts) <= BLOCK:
         embeddings = model.encode(texts, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
         np.save(f"data/{name}_embeddings.npy", embeddings.astype(np.float32))

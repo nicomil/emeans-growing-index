@@ -34,6 +34,7 @@ Uso: uv run exp_scale.py arxiv-full [seed] > results/exp_scale_arxiv-full_seed0.
 import json
 import sys
 import time
+from pathlib import Path
 
 import faiss
 import numpy as np
@@ -56,6 +57,7 @@ FIXED = "e-means di Faiss con massa iniziale e media mobile"
 COLD = "da zero su tutti i testi, e-means 3 epoche"
 REFERENCE = "da zero su tutti i testi, e-means 10 epoche (riferimento)"
 REBUILT = " + liste ricostruite"
+FROM_SCRATCH = ((COLD, 3), (REFERENCE, 10))
 
 
 def assign(x, centroids):
@@ -104,8 +106,11 @@ def lazy(centroids, labels, seen, seed):
     return centroids, labels
 
 
-def split(centroids, labels, seen, seed):
-    """Raggruppa di nuovo le liste più grandi insieme a quante liste piccole servono per non cambiare K."""
+def split(centroids, labels, seen, seed, niter=10, warm=False):
+    """Raggruppa di nuovo le liste più grandi insieme a quante liste piccole servono per non cambiare K.
+
+    Con warm il k-means parte dai centroidi vecchi delle liste coinvolte invece che da punti a caso.
+    """
     k = max(1, len(centroids) // 256)
     sizes = np.bincount(labels, minlength=len(centroids))
     by_size = np.argsort(sizes, kind="stable")
@@ -114,8 +119,8 @@ def split(centroids, labels, seen, seed):
         return centroids, labels
     involved = np.concatenate([by_size[-k:], by_size[: k2 - k]])
     rows = np.flatnonzero(np.isin(labels, involved))
-    kmeans = faiss.Kmeans(seen.shape[1], k2, niter=10, seed=seed + 1)
-    kmeans.train(seen[rows])
+    kmeans = faiss.Kmeans(seen.shape[1], k2, niter=niter, seed=seed + 1)
+    kmeans.train(seen[rows], init_centroids=centroids[involved] if warm else None)
     centroids, labels = centroids.copy(), labels.copy()
     centroids[involved] = kmeans.centroids
     labels[rows] = involved[assign(seen[rows], kmeans.centroids)]
@@ -142,6 +147,10 @@ def load(corpus, n_docs):
     dates = np.load(f"data/{corpus}_dates.npy")
     assert len(x) == len(dates) >= n_docs + N_QUERIES
     assert (dates[1:] >= dates[:-1]).all(), "i testi devono essere in ordine di data"
+    asked = Path(f"data/{corpus}_queries.npy")
+    if asked.exists():  # domande vere di utenti al posto dei testi tenuti fuori
+        queries = np.load(asked)[:N_QUERIES]
+        return np.ascontiguousarray(x[:n_docs]), dates[:n_docs], queries, np.full(len(queries), dates[n_docs - 1])
     held = np.zeros(len(x), dtype=bool)
     held[np.random.default_rng(0).choice(len(x), N_QUERIES, replace=False)] = True
     kept = np.flatnonzero(~held)[:n_docs]
@@ -178,10 +187,12 @@ def run(corpus, seed, scale):
             continue
         indexes = dict(state)
         for name in (NAIVE, LLOYD, FIXED):
+            if name not in state:
+                continue
             labels, seconds = timed(assign, seen, state[name][0])
             indexes[name + REBUILT] = state[name][0], labels
             times.setdefault("riassegnazione di tutti i vettori", []).append((n, seconds))
-        for name, epochs in ((COLD, 3), (REFERENCE, 10)):
+        for name, epochs in FROM_SCRATCH:
             if epochs == 10 and r != rounds:
                 continue
             centroids, seconds = timed(train, seen, epochs, 1000 * seed + r)
