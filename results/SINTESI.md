@@ -116,7 +116,59 @@ Per confronto, dopo 10 giri: mai aggiornare 0.918; riferimento 0.945.
 
 ## notizie HuffPost, bge-base-en-v1.5 (768 dimensioni)
 
-Risultati mancanti.
+Dopo 10 giri, indice da 200.000 testi, 2898 interrogazioni. Recall@10; tra parentesi quadre l'intervallo al 95%.
+
+Periodo aggiunto: le 1508 interrogazioni datate dopo l'indice iniziale.
+
+| Strategia | Errore nelle liste | Recall, 1% letto | Recall 1%, periodo aggiunto | Recall, 0,1% letto |
+|---|---|---|---|---|
+| mai aggiornare | +6.95% | 0.746 [0.738; 0.755] | 0.684 [0.672; 0.695] | 0.375 [0.365; 0.385] |
+| mai aggiornare, testi in ordine casuale (controllo senza deriva) | +2.06% | 0.807 [0.800; 0.814] | — | 0.458 [0.448; 0.467] |
+| e-means di Faiss 1.16.0, impostazioni di serie | +136.03% | 0.049 [0.046; 0.053] | 0.078 [0.072; 0.085] | 0.022 [0.019; 0.024] |
+| e-means di Faiss 1.16.0, impostazioni di serie + liste ricostruite | +30.53% | 0.389 [0.379; 0.399] | 0.486 [0.472; 0.501] | 0.116 [0.111; 0.123] |
+| mini-batch k-means dalle dimensioni delle liste | +3.36% | 0.770 [0.762; 0.778] | 0.722 [0.710; 0.733] | 0.397 [0.387; 0.407] |
+| e-means: massa 0,2, passo/4, senza rianimazione né medie finali | +5.26% | 0.775 [0.767; 0.783] | 0.740 [0.730; 0.751] | 0.402 [0.392; 0.411] |
+| e-means: massa sì, rianimazione no, medie finali no | +3.43% | 0.773 [0.765; 0.781] | 0.727 [0.716; 0.739] | 0.399 [0.389; 0.409] |
+| da zero, 1 epoca | +3.39% | 0.793 [0.786; 0.800] | 0.785 [0.775; 0.795] | 0.426 [0.416; 0.435] |
+| a caldo, 1 epoca a giro | +2.69% | 0.798 [0.790; 0.805] | 0.793 [0.783; 0.802] | 0.441 [0.432; 0.451] |
+| da zero, 3 epoche | +0.59% | 0.814 [0.807; 0.821] | 0.810 [0.800; 0.819] | 0.475 [0.465; 0.485] |
+| a caldo, 3 epoche a giro | +0.39% | 0.815 [0.808; 0.822] | 0.811 [0.802; 0.820] | 0.477 [0.467; 0.487] |
+| a caldo con massa a regime, 3 epoche a giro | +0.05% | 0.819 [0.812; 0.826] | 0.811 [0.801; 0.820] | 0.489 [0.479; 0.499] |
+| a caldo con massa a regime, senza medie finali, 3 epoche a giro | +0.13% | 0.820 [0.813; 0.827] | 0.814 [0.805; 0.823] | 0.489 [0.479; 0.500] |
+| da zero, 10 epoche (riferimento) | +0.00% | 0.821 [0.814; 0.828] | 0.819 [0.809; 0.828] | 0.487 [0.477; 0.497] |
+
+Differenze appaiate di recall (1% letto), dopo 10 giri. L'ultima colonna è la stessa differenza calcolata seed per seed.
+
+| Confronto | Differenza [intervallo sulle interrogazioni] | Lo zero è escluso? | Tra i seed [min; max] |
+|---|---|---|---|
+| da zero, 10 epoche (riferimento) − mai aggiornare | +0.075 [+0.068; +0.081] | sì | [+0.071; +0.078] |
+| mai aggiornare, testi in ordine casuale (controllo senza deriva) − mai aggiornare | +0.061 [+0.054; +0.067] | sì | [+0.057; +0.063] |
+| mini-batch k-means dalle dimensioni delle liste − mai aggiornare | +0.024 [+0.020; +0.028] | sì | [+0.019; +0.028] |
+| e-means: massa 0,2, passo/4, senza rianimazione né medie finali − mini-batch k-means dalle dimensioni delle liste | +0.005 [+0.001; +0.008] | sì | [+0.003; +0.006] |
+| e-means: massa sì, rianimazione no, medie finali no − mini-batch k-means dalle dimensioni delle liste | +0.003 [+0.001; +0.004] | sì | [+0.003; +0.003] |
+| da zero, 3 epoche − da zero, 10 epoche (riferimento) | -0.007 [-0.009; -0.004] | sì | [-0.011; -0.002] |
+| a caldo, 3 epoche a giro − da zero, 3 epoche | +0.001 [-0.001; +0.003] | no | [-0.001; +0.002] |
+| a caldo con massa a regime, 3 epoche a giro − da zero, 3 epoche | +0.005 [+0.002; +0.008] | sì | [+0.004; +0.006] |
+| a caldo con massa a regime, senza medie finali, 3 epoche a giro − da zero, 3 epoche | +0.006 [+0.003; +0.009] | sì | [+0.005; +0.008] |
+| a caldo, 1 epoca a giro − da zero, 1 epoca | +0.005 [+0.002; +0.008] | sì | [+0.002; +0.008] |
+| da zero, 1 epoca − mai aggiornare | +0.046 [+0.040; +0.052] | sì | [+0.041; +0.051] |
+| e-means di Faiss 1.16.0, impostazioni di serie + liste ricostruite − mai aggiornare | -0.358 [-0.370; -0.345] | sì | [-0.371; -0.339] |
+| e-means di Faiss 1.16.0, impostazioni di serie − e-means: massa no, rianimazione sì, medie finali sì | +0.002 [+0.000; +0.003] | sì | [-0.000; +0.003] |
+
+Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecchi. Recall con l'1% letto.
+
+| Massa iniziale | Rianimazione | Medie finali | Dopo 1 giro | Dopo 10 giri | Dopo 10 giri, liste ricostruite |
+|---|---|---|---|---|---|
+| no | sì | sì | 0.115 [0.108; 0.123] | 0.048 [0.044; 0.051] | 0.379 [0.370; 0.389] |
+| no | sì | no | 0.096 [0.089; 0.103] | 0.045 [0.042; 0.049] | 0.392 [0.381; 0.402] |
+| no | no | sì | 0.188 [0.179; 0.198] | 0.104 [0.099; 0.109] | 0.148 [0.143; 0.155] |
+| no | no | no | 0.186 [0.176; 0.196] | 0.103 [0.098; 0.108] | 0.137 [0.132; 0.143] |
+| sì | sì | sì | 0.619 [0.608; 0.631] | 0.365 [0.356; 0.376] | 0.508 [0.499; 0.519] |
+| sì | sì | no | 0.792 [0.782; 0.802] | 0.773 [0.766; 0.781] | 0.786 [0.779; 0.794] |
+| sì | no | sì | 0.619 [0.608; 0.631] | 0.365 [0.355; 0.376] | 0.504 [0.494; 0.514] |
+| sì | no | no | 0.792 [0.782; 0.801] | 0.773 [0.765; 0.781] | 0.783 [0.776; 0.791] |
+
+Per confronto, dopo 10 giri: mai aggiornare 0.746; riferimento 0.821.
 
 ## abstract arXiv, bge-base-en-v1.5 (768 dimensioni)
 
