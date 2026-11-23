@@ -143,10 +143,15 @@ def report(name, label):
         # Quante iterazioni servono al k-means per eguagliare e-means a 3 epoche: si riporta la
         # forchetta tra le due configurazioni misurate, senza interpolare.
         seconds = med("e-means", 3, "secondi")
-        for key, label in (("errore", "errore di addestramento"), ("errore fuori", "errore sui testi tenuti fuori")):
-            target = med("e-means", 3, key)
+        # Il recall è arrotondato alla terza cifra: su circa 2.900 interrogazioni l'incertezza è di alcuni millesimi.
+        for key, label, better in (
+            ("errore", "errore di addestramento", -1), ("errore fuori", "errore sui testi tenuti fuori", -1),
+            ("recall 0.1%", "recall con lo 0,1% dell'indice letto", 1), ("recall 1.0%", "recall con l'1% dell'indice letto", 1),
+        ):
+            target = round(med("e-means", 3, key), 3) if better > 0 else med("e-means", 3, key)
             steps = amounts("k-means")
-            reached = [a for a in steps if med("k-means", a, key) <= target]
+            value = lambda a: round(med("k-means", a, key), 3) if better > 0 else med("k-means", a, key)
+            reached = [a for a in steps if better * (value(a) - target) >= 0]
             if not reached:
                 print(f"\nA parità di {label}: il k-means non raggiunge e-means a 3 epoche nemmeno con {steps[-1]} iterazioni "
                       f"({med('k-means', steps[-1], 'secondi'):.1f} s contro {seconds:.1f} s): rapporto dei tempi superiore a {med('k-means', steps[-1], 'secondi') / seconds:.1f}.")

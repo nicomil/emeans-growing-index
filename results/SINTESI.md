@@ -58,6 +58,31 @@ Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecc
 
 Per confronto, dopo 10 giri: mai aggiornare 0.781; riferimento 0.843.
 
+Ricalcolo completo, implementazioni di Faiss (mediana di 5 ripetizioni):
+
+| Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |
+|---|---|---|---|---|---|
+| e-means | 1 | 1.5 s | 0.6268 | 0.6395 | 0.818 |
+| e-means | 2 | 2.9 s | 0.6128 | 0.6293 | 0.836 |
+| e-means | 3 | 4.3 s | 0.6099 | 0.6270 | 0.838 |
+| e-means | 5 | 7.1 s | 0.6080 | 0.6252 | 0.840 |
+| e-means | 10 | 14.1 s | 0.6066 | 0.6237 | 0.842 |
+| k-means | 3 | 2.7 s | 0.6264 | 0.6414 | 0.833 |
+| k-means | 5 | 4.5 s | 0.6192 | 0.6351 | 0.838 |
+| k-means | 10 | 9.1 s | 0.6136 | 0.6305 | 0.842 |
+| k-means | 12 | 10.9 s | 0.6127 | 0.6299 | 0.843 |
+| k-means | 15 | 13.6 s | 0.6119 | 0.6293 | 0.843 |
+| k-means | 20 | 18.2 s | 0.6112 | 0.6288 | 0.843 |
+| k-means | 25 | 22.6 s | 0.6109 | 0.6285 | 0.843 |
+
+A parità di errore di addestramento: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (22.6 s contro 4.3 s): rapporto dei tempi superiore a 5.3.
+
+A parità di errore sui testi tenuti fuori: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (22.6 s contro 4.3 s): rapporto dei tempi superiore a 5.3.
+
+A parità di recall con lo 0,1% dell'indice letto: al k-means servono tra 15 e 20 iterazioni, cioè tra 13.6 e 18.2 s contro 4.3 s di e-means a 3 epoche: rapporto dei tempi tra 3.2 e 4.2.
+
+A parità di recall con l'1% dell'indice letto: al k-means servono tra 3 e 5 iterazioni, cioè tra 2.7 e 4.5 s contro 4.3 s di e-means a 3 epoche: rapporto dei tempi tra 0.6 e 1.1.
+
 ## abstract arXiv, all-MiniLM-L6-v2 (384 dimensioni)
 
 Dopo 10 giri, indice da 200.000 testi, 2900 interrogazioni. Recall@10; tra parentesi quadre l'intervallo al 95%.
@@ -114,6 +139,31 @@ Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecc
 
 Per confronto, dopo 10 giri: mai aggiornare 0.918; riferimento 0.945.
 
+Ricalcolo completo, implementazioni di Faiss (mediana di 5 ripetizioni):
+
+| Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |
+|---|---|---|---|---|---|
+| e-means | 1 | 1.5 s | 0.5181 | 0.5278 | 0.933 |
+| e-means | 2 | 2.9 s | 0.5075 | 0.5202 | 0.940 |
+| e-means | 3 | 4.3 s | 0.5053 | 0.5177 | 0.943 |
+| e-means | 5 | 7.1 s | 0.5039 | 0.5174 | 0.945 |
+| e-means | 10 | 14.1 s | 0.5029 | 0.5164 | 0.945 |
+| k-means | 3 | 2.7 s | 0.5180 | 0.5293 | 0.936 |
+| k-means | 5 | 4.5 s | 0.5126 | 0.5247 | 0.940 |
+| k-means | 10 | 9.1 s | 0.5083 | 0.5213 | 0.943 |
+| k-means | 12 | 10.9 s | 0.5076 | 0.5206 | 0.944 |
+| k-means | 15 | 13.6 s | 0.5070 | 0.5199 | 0.944 |
+| k-means | 20 | 18.2 s | 0.5064 | 0.5194 | 0.944 |
+| k-means | 25 | 22.7 s | 0.5061 | 0.5191 | 0.944 |
+
+A parità di errore di addestramento: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (22.7 s contro 4.3 s): rapporto dei tempi superiore a 5.3.
+
+A parità di errore sui testi tenuti fuori: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (22.7 s contro 4.3 s): rapporto dei tempi superiore a 5.3.
+
+A parità di recall con lo 0,1% dell'indice letto: al k-means servono tra 12 e 15 iterazioni, cioè tra 10.9 e 13.6 s contro 4.3 s di e-means a 3 epoche: rapporto dei tempi tra 2.5 e 3.2.
+
+A parità di recall con l'1% dell'indice letto: al k-means servono tra 5 e 10 iterazioni, cioè tra 4.5 e 9.1 s contro 4.3 s di e-means a 3 epoche: rapporto dei tempi tra 1.1 e 2.1.
+
 ## notizie HuffPost, bge-base-en-v1.5 (768 dimensioni)
 
 Dopo 10 giri, indice da 200.000 testi, 2898 interrogazioni. Recall@10; tra parentesi quadre l'intervallo al 95%.
@@ -169,6 +219,31 @@ Scomposizione dell'uso ingenuo: e-means sui soli testi nuovi, dai centroidi vecc
 | sì | no | no | 0.792 [0.782; 0.801] | 0.773 [0.765; 0.781] | 0.783 [0.776; 0.791] |
 
 Per confronto, dopo 10 giri: mai aggiornare 0.746; riferimento 0.821.
+
+Ricalcolo completo, implementazioni di Faiss (mediana di 5 ripetizioni):
+
+| Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 1% letto |
+|---|---|---|---|---|---|
+| e-means | 1 | 2.3 s | 0.4196 | 0.4293 | 0.791 |
+| e-means | 2 | 4.5 s | 0.4101 | 0.4226 | 0.811 |
+| e-means | 3 | 6.7 s | 0.4079 | 0.4204 | 0.815 |
+| e-means | 5 | 10.9 s | 0.4066 | 0.4196 | 0.819 |
+| e-means | 10 | 21.8 s | 0.4057 | 0.4191 | 0.820 |
+| k-means | 3 | 3.6 s | 0.4177 | 0.4288 | 0.807 |
+| k-means | 5 | 5.9 s | 0.4134 | 0.4253 | 0.815 |
+| k-means | 10 | 11.8 s | 0.4101 | 0.4227 | 0.820 |
+| k-means | 12 | 14.3 s | 0.4096 | 0.4224 | 0.821 |
+| k-means | 15 | 17.8 s | 0.4092 | 0.4220 | 0.821 |
+| k-means | 20 | 23.7 s | 0.4088 | 0.4217 | 0.821 |
+| k-means | 25 | 29.7 s | 0.4086 | 0.4215 | 0.821 |
+
+A parità di errore di addestramento: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (29.7 s contro 6.7 s): rapporto dei tempi superiore a 4.4.
+
+A parità di errore sui testi tenuti fuori: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (29.7 s contro 6.7 s): rapporto dei tempi superiore a 4.4.
+
+A parità di recall con lo 0,1% dell'indice letto: il k-means non raggiunge e-means a 3 epoche nemmeno con 25 iterazioni (29.7 s contro 6.7 s): rapporto dei tempi superiore a 4.4.
+
+A parità di recall con l'1% dell'indice letto: al k-means servono tra 3 e 5 iterazioni, cioè tra 3.6 e 5.9 s contro 6.7 s di e-means a 3 epoche: rapporto dei tempi tra 0.5 e 0.9.
 
 ## abstract arXiv, bge-base-en-v1.5 (768 dimensioni)
 

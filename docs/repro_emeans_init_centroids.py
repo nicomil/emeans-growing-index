@@ -18,7 +18,7 @@ import faiss
 import numpy as np
 from faiss.contrib.e_means import NumpyEmeans
 
-d, k, n_old, n_new, n_query, top, nprobe = 64, 1024, 100_000, 10_000, 2_000, 10, 8
+d, k, n_old, n_new, n_query, top, nprobe = 64, 2048, 100_000, 10_000, 2_000, 10, 16
 rng = np.random.RandomState(0)
 means = rng.normal(0, 0.7, (200, d))
 
@@ -71,6 +71,20 @@ def emeans(x, epochs, init=None, **kwargs):
     return NumpyEmeans(d, k, nepochs=epochs, seed=0, **kwargs).train(x, init_centroids=init)[0]
 
 
+def emeans_with_usage(x, init, list_sizes):
+    """The same single pass, driven by hand so that two things can be changed:
+    the initial usage (alpha0 * list size instead of 2**-16) and the read-out
+    (the EMA centroids instead of the closing means). `_usage` is private: there
+    is no public way to set it."""
+    em = NumpyEmeans(d, k, nepochs=1, seed=0)
+    em.begin(len(x), init)
+    em._usage[:] = em.recipe["alpha0"] * list_sizes
+    order = np.random.RandomState(0).permutation(len(x))
+    for start in range(0, len(x), em.recipe["batch_size"]):
+        em.update(em.accumulate(x[order[start : start + em.recipe["batch_size"]]]))
+    return em.current_centroids().copy()
+
+
 def lloyd(x, iterations, init):
     kmeans = faiss.Kmeans(d, k, niter=iterations, seed=1, max_points_per_centroid=len(x))
     kmeans.train(x, init_centroids=init)
@@ -78,6 +92,9 @@ def lloyd(x, iterations, init):
 
 
 c_old = emeans(old, 5)
+quantizer_old = faiss.IndexFlatL2(d)
+quantizer_old.add(c_old)
+sizes_old = np.bincount(quantizer_old.search(old, 1)[1].ravel(), minlength=k)
 noise = rng.normal(0, 1, (k, d)).astype("float32")
 rows = [
     ("old centroids, not updated", c_old),
@@ -87,6 +104,7 @@ rows = [
     ("  same, unused_threshold=0 (no revival)", emeans(new, 1, init=c_old, unused_threshold=0)),
     ("e-means on new, init = random rows of new, 1 epoch", emeans(new, 1)),
     ("e-means on new, init = Gaussian noise, 1 epoch", emeans(new, 1, init=noise)),
+    ("e-means on new, init = old, usage set, EMA read-out", emeans_with_usage(new, c_old, sizes_old)),
 ]
 print(f"faiss {faiss.__version__}: d={d}, k={k}, {n_old} old rows, {n_new} new rows from the same distribution")
 print(f"IndexIVFFlat over all {len(everything)} rows; recall@{top} at a search cost >= that of the first row\n")
