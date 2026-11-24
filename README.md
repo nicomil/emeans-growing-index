@@ -1,62 +1,64 @@
-# e-means e gli indici che cambiano: aggiornare o ricalcolare?
+# e-means and indexes that change: update or rebuild?
 
-Studio indipendente di [e-means](https://arxiv.org/abs/2611.09501), la variante di k-means pubblicata da Meta FAIR nel novembre 2026 e distribuita in Faiss 1.16.0, in una situazione che il paper non tratta: un indice vettoriale a cluster (IVF) che riceve documenti nuovi nel tempo.
+An independent study of [e-means](https://arxiv.org/abs/2611.09501), the k-means variant published by Meta FAIR in November 2026 and shipped in Faiss 1.16.0, in a situation the paper does not cover: a cluster-based vector index (IVF) that receives new documents over time.
 
-I risultati sono in `results/SINTESI.md`, il rapporto in `docs/RAPPORTO.md`. Il brief del progetto (`brief.md`) e il percorso passo per passo, con le revisioni, sono in `docs/percorso/`.
+The results are in `results/SINTESI.md`, the report in `docs/REPORT.md`. The project brief (`brief.md`) and the step-by-step journey, with the reviews, are in `docs/journey/`.
 
-## Cosa c'è
+Result tables in `results/` are script output and are in Italian, as are code comments.
 
-| File | Cosa fa |
+## What is here
+
+| File | What it does |
 |---|---|
-| `emeans.py` | e-means in un file NumPy breve, con ciò che Faiss non espone: massa iniziale dei centroidi e medie finali disattivabili |
-| `test_emeans.py` | Test, compreso il confronto con l'implementazione di Faiss |
-| `demo_2d.py` | Animazione dei centroidi su punti in due dimensioni |
-| `exp_warm.py`, `exp_new_only.py`, `exp_rule.py`, `exp_sequence.py` | Esperimenti su dati sintetici con deriva controllata (passi 3, 4, 4b, D) |
-| `embed_corpus.py` | Scarica un corpus con date e ne calcola gli embedding |
-| `exp_real.py` | Strategie di aggiornamento di un indice su embedding veri: errore e recall |
-| `bench_rebuild.py` | Tempi del ricalcolo completo, e-means contro k-means classico |
-| `check_recall_vs_faiss.py` | Verifica che il recall calcolato qui coincida con quello di un indice IVF di Faiss |
-| `check_faiss_naive.py` | L'aggiornamento ingenuo e la sua correzione, fatti con il codice di Faiss |
-| `check_naive_baselines.py` | Lo stesso aggiornamento con k-means e con due dimensioni di aggiornamento |
-| `check_main_revival.py` | Sul ramo principale di Faiss: quanto dipende dalla rianimazione dei cluster |
-| `exp_scale.py` | L'esperimento a 1,5 milioni di testi e 16.384 centroidi, con il solo codice di Faiss e il confronto con DeDrift |
-| `bench_scale.py` | Tempi del ricalcolo completo a quella scala |
-| `check_split.py` | Quanto pesano le scelte che il paper di DeDrift non fissa |
-| `analyze.py` | Sintesi con intervalli di confidenza |
-| `docs/repro_emeans_init_centroids.py` | Riproduzione minima, autonoma, del comportamento di `init_centroids` |
+| `emeans.py` | e-means in one short NumPy file, with what Faiss does not expose: initial mass of the centroids and final averages that can be switched off |
+| `test_emeans.py` | Tests, including the comparison with the Faiss implementation |
+| `demo_2d.py` | Animation of the centroids on points in two dimensions |
+| `exp_warm.py`, `exp_new_only.py`, `exp_rule.py`, `exp_sequence.py` | Experiments on synthetic data with controlled drift (steps 3, 4, 4b, D) |
+| `embed_corpus.py` | Downloads a dated corpus and computes its embeddings |
+| `exp_real.py` | Index update strategies on real embeddings: error and recall |
+| `bench_rebuild.py` | Timings of the full rebuild, e-means against classic k-means |
+| `check_recall_vs_faiss.py` | Checks that the recall computed here matches that of a Faiss IVF index |
+| `check_faiss_naive.py` | The naive refresh and its fix, done with the Faiss code |
+| `check_naive_baselines.py` | The same refresh with k-means and with two update sizes |
+| `check_main_revival.py` | On the Faiss main branch: how much it depends on cluster revival |
+| `exp_scale.py` | The experiment at 1.5 million texts and 16,384 centroids, with Faiss code only and the comparison with DeDrift |
+| `bench_scale.py` | Timings of the full rebuild at that scale |
+| `check_split.py` | How much the choices that the DeDrift paper leaves open matter |
+| `analyze.py` | Summary with confidence intervals |
+| `docs/repro_emeans_init_centroids.py` | Minimal, self-contained reproduction of the behaviour of `init_centroids` |
 
-## Rifare i risultati
+## Reproducing the results
 
-Serve [uv](https://docs.astral.sh/uv/). Le dipendenze si installano da sole al primo comando.
+You need [uv](https://docs.astral.sh/uv/). Dependencies install themselves on the first command.
 
 ```bash
-uv run pytest -q                                   # test, pochi secondi
+uv run pytest -q                                   # tests, a few seconds
 
-# dati sintetici
-uv run exp_warm.py                                 # circa 1 minuto
-uv run exp_new_only.py sovrapposti                 # anche: netti, senza-deriva; 3-4 minuti l'uno
+# synthetic data
+uv run exp_warm.py                                 # about 1 minute
+uv run exp_new_only.py sovrapposti                 # also: netti, senza-deriva; 3-4 minutes each
 uv run exp_rule.py sovrapposti > results/exp_rule_sovrapposti.md
 uv run exp_rule.py netti > results/exp_rule_netti.md
-uv run exp_sequence.py > results/exp_sequence.md   # richiede il comando precedente
+uv run exp_sequence.py > results/exp_sequence.md   # requires the previous command
 
-# dati veri: prima gli embedding, una volta per insieme di dati
-uv run --group real embed_corpus.py news           # notizie, modello a 384 dimensioni: pochi minuti
-uv run --group real embed_corpus.py arxiv          # abstract, scarica 1,4 GB: circa 15 minuti
-uv run --group real embed_corpus.py news bge       # modello a 768 dimensioni: circa 30 minuti
-uv run --group real embed_corpus.py arxiv bge      # alcune ore su un portatile
+# real data: embeddings first, once per dataset
+uv run --group real embed_corpus.py news           # news, 384-dimension model: a few minutes
+uv run --group real embed_corpus.py arxiv          # abstracts, downloads 1.4 GB: about 15 minutes
+uv run --group real embed_corpus.py news bge       # 768-dimension model: about 30 minutes
+uv run --group real embed_corpus.py arxiv bge      # a few hours on a laptop
 
-# poi, per ogni insieme di dati (news, arxiv, news-bge, arxiv-bge)
-uv run exp_real.py news > results/exp_real_news.md                  # circa 30 minuti
+# then, for each dataset (news, arxiv, news-bge, arxiv-bge)
+uv run exp_real.py news > results/exp_real_news.md                  # about 30 minutes
 uv run check_recall_vs_faiss.py news > results/check_recall_news.md
-uv run bench_rebuild.py news > results/bench_rebuild_news.md        # da solo, a macchina libera
+uv run bench_rebuild.py news > results/bench_rebuild_news.md        # on its own, on an idle machine
 uv run check_faiss_naive.py news > results/check_faiss_naive_news.md
 uv run check_naive_baselines.py news > results/check_naive_baselines_news.md
 uv run analyze.py > results/SINTESI.md
 ```
 
-`run_night2.sh` esegue la parte sui dati veri in fila, un lavoro alla volta.
+`run_night2.sh` runs the real-data part in a row, one job at a time.
 
-Per ripetere l'aggiornamento singolo sul ramo principale di Faiss serve compilarlo (CMake, SWIG, libomp) e usare quel Python al posto di `uv run`:
+To repeat the single update on the Faiss main branch you need to build it (CMake, SWIG, libomp) and use that Python instead of `uv run`:
 
 ```bash
 git clone https://github.com/facebookresearch/faiss.git vendor/faiss_src && cd vendor/faiss_src
@@ -69,34 +71,34 @@ vendor/faiss_venv/bin/python check_naive_baselines.py news > results/check_naive
 vendor/faiss_venv/bin/python check_main_revival.py news > results/check_main_revival_news.md
 ```
 
-Scala grande (1,5 milioni di testi; servono circa 2 ore di embedding per arXiv, 1 per MS MARCO, e 16 GB di memoria):
+Large scale (1.5 million texts; it takes about 2 hours of embedding for arXiv, 1 for MS MARCO, and 16 GB of memory):
 
 ```
 uv run --group real embed_corpus.py arxiv-full
 uv run --group real embed_corpus.py msmarco
-uv run exp_scale.py arxiv-full 0 > results/exp_scale_arxiv-full_seed0.md   # circa 45 minuti; lo stesso con msmarco
-uv run bench_scale.py arxiv-full > results/bench_scale_arxiv-full.md        # circa 2 ore, a macchina libera
+uv run exp_scale.py arxiv-full 0 > results/exp_scale_arxiv-full_seed0.md   # about 45 minutes; the same with msmarco
+uv run bench_scale.py arxiv-full > results/bench_scale_arxiv-full.md        # about 2 hours, on an idle machine
 uv run check_split.py arxiv-full > results/check_split_arxiv-full.md
 ```
 
-Gli embedding finiscono in `data/`, che non è sotto controllo di versione: ogni file pesa da 300 a 650 MB, quelli a scala grande 2,4 GB.
+The embeddings end up in `data/`, which is not under version control: each file weighs 300 to 650 MB, the large-scale ones 2.4 GB.
 
-## Dati e modelli
+## Data and models
 
-- Notizie: [`heegyu/news-category-dataset`](https://huggingface.co/datasets/heegyu/news-category-dataset), titoli e sommari di HuffPost, 2012-2022.
-- Abstract: [`gfissore/arxiv-abstracts-2021`](https://huggingface.co/datasets/gfissore/arxiv-abstracts-2021), 210.000 articoli estratti a caso tra il 2007 e il 2021.
-- Scala grande: tutti gli abstract dello stesso dataset arXiv (1.585.373) e 1.600.000 passaggi estratti a caso da [`BeIR/msmarco`](https://huggingface.co/datasets/BeIR/msmarco), con 3.000 delle sue domande.
-- Embedding: [`all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) e [`bge-base-en-v1.5`](https://huggingface.co/BAAI/bge-base-en-v1.5).
+- News: [`heegyu/news-category-dataset`](https://huggingface.co/datasets/heegyu/news-category-dataset), HuffPost headlines and summaries, 2012-2022.
+- Abstracts: [`gfissore/arxiv-abstracts-2021`](https://huggingface.co/datasets/gfissore/arxiv-abstracts-2021), 210,000 papers sampled at random between 2007 and 2021.
+- Large scale: all the abstracts of the same arXiv dataset (1,585,373) and 1,600,000 passages sampled at random from [`BeIR/msmarco`](https://huggingface.co/datasets/BeIR/msmarco), with 3,000 of its queries.
+- Embeddings: [`all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) and [`bge-base-en-v1.5`](https://huggingface.co/BAAI/bge-base-en-v1.5).
 
-Le revisioni di dataset e modelli non sono fissate: scaricandoli in futuro i numeri possono cambiare leggermente.
+The revisions of datasets and models are not pinned: downloading them in the future may change the numbers slightly.
 
-## Limiti da tenere presenti
+## Limits to keep in mind
 
-- Indici da 200.000 a 1.550.000 vettori su un portatile. A scale molto più grandi il costo del ricalcolo completo cresce e le conclusioni pratiche possono cambiare.
-- Le interrogazioni sono testi del corpus tenuti fuori dall'indice; domande vere di utenti solo su MS MARCO, che però non ha date e quindi non ha deriva.
-- DeDrift è riscritto dal testo del paper, perché non risulta codice pubblicato; Ada-IVF e SPFresh non sono stati provati.
-- Faiss 1.16.0. Il ramo principale di Faiss ha poi cambiato la rianimazione dei cluster: lì sono stati rifatti l'aggiornamento singolo e una corsa a scala grande (`results/*_main.md`, `results/check_main_revival_*.md`), con Faiss compilato dai sorgenti al commit 16a95d6.
+- Indexes from 200,000 to 1,550,000 vectors on a laptop. At much larger scales the cost of the full rebuild grows and the practical conclusions may change.
+- The queries are texts from the corpus held out of the index; real user questions only on MS MARCO, which however has no dates and therefore no drift.
+- DeDrift is rewritten from the text of the paper, because no published code appears to exist; Ada-IVF and SPFresh were not tried.
+- Faiss 1.16.0. The Faiss main branch has since changed cluster revival: the single update and one large-scale run were redone there (`results/*_main.md`, `results/check_main_revival_*.md`), with Faiss built from source at commit 16a95d6.
 
-## Licenza
+## Licence
 
-Codice e testi sotto licenza MIT (`LICENSE`). Dataset e modelli hanno le licenze dei rispettivi autori.
+Code and texts under the MIT licence (`LICENSE`). Datasets and models carry the licences of their respective authors.
