@@ -19,6 +19,9 @@ Il brief del progetto è in `_bmad-output/planning-artifacts/briefs/`, i risulta
 | `check_faiss_naive.py` | L'aggiornamento ingenuo e la sua correzione, fatti con il codice di Faiss |
 | `check_naive_baselines.py` | Lo stesso aggiornamento con k-means e con due dimensioni di aggiornamento |
 | `check_main_revival.py` | Sul ramo principale di Faiss: quanto dipende dalla rianimazione dei cluster |
+| `exp_scale.py` | L'esperimento a 1,5 milioni di testi e 16.384 centroidi, con il solo codice di Faiss e il confronto con DeDrift |
+| `bench_scale.py` | Tempi del ricalcolo completo a quella scala |
+| `check_split.py` | Quanto pesano le scelte che il paper di DeDrift non fissa |
 | `analyze.py` | Sintesi con intervalli di confidenza |
 | `docs/repro_emeans_init_centroids.py` | Riproduzione minima, autonoma, del comportamento di `init_centroids` |
 
@@ -66,19 +69,30 @@ vendor/faiss_venv/bin/python check_naive_baselines.py news > results/check_naive
 vendor/faiss_venv/bin/python check_main_revival.py news > results/check_main_revival_news.md
 ```
 
-Gli embedding finiscono in `data/`, che non è sotto controllo di versione: ogni file pesa da 300 a 650 MB.
+Scala grande (1,5 milioni di testi; servono circa 2 ore di embedding per arXiv, 1 per MS MARCO, e 16 GB di memoria):
+
+```
+uv run --group real embed_corpus.py arxiv-full
+uv run --group real embed_corpus.py msmarco
+uv run exp_scale.py arxiv-full 0 > results/exp_scale_arxiv-full_seed0.md   # circa 45 minuti; lo stesso con msmarco
+uv run bench_scale.py arxiv-full > results/bench_scale_arxiv-full.md        # circa 2 ore, a macchina libera
+uv run check_split.py arxiv-full > results/check_split_arxiv-full.md
+```
+
+Gli embedding finiscono in `data/`, che non è sotto controllo di versione: ogni file pesa da 300 a 650 MB, quelli a scala grande 2,4 GB.
 
 ## Dati e modelli
 
 - Notizie: [`heegyu/news-category-dataset`](https://huggingface.co/datasets/heegyu/news-category-dataset), titoli e sommari di HuffPost, 2012-2022.
 - Abstract: [`gfissore/arxiv-abstracts-2021`](https://huggingface.co/datasets/gfissore/arxiv-abstracts-2021), 210.000 articoli estratti a caso tra il 2007 e il 2021.
+- Scala grande: tutti gli abstract dello stesso dataset arXiv (1.585.373) e 1.600.000 passaggi estratti a caso da [`BeIR/msmarco`](https://huggingface.co/datasets/BeIR/msmarco), con 3.000 delle sue domande.
 - Embedding: [`all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) e [`bge-base-en-v1.5`](https://huggingface.co/BAAI/bge-base-en-v1.5).
 
 Le revisioni di dataset e modelli non sono fissate: scaricandoli in futuro i numeri possono cambiare leggermente.
 
 ## Limiti da tenere presenti
 
-- Indici da 200.000 vettori su un portatile. A scale molto più grandi il costo del ricalcolo completo cresce e le conclusioni pratiche possono cambiare.
-- Le interrogazioni sono testi del corpus tenuti fuori dall'indice, non domande di utenti.
-- I confronti sono con metodi semplici, non con quelli della letteratura sulla deriva degli indici (DeDrift, Ada-IVF, SPFresh).
-- Faiss 1.16.0. Il ramo principale di Faiss ha poi cambiato la rianimazione dei cluster: lì è stato rifatto solo l'aggiornamento singolo (`results/*_main.md`, `results/check_main_revival_*.md`), con Faiss compilato dai sorgenti al commit 16a95d6.
+- Indici da 200.000 a 1.550.000 vettori su un portatile. A scale molto più grandi il costo del ricalcolo completo cresce e le conclusioni pratiche possono cambiare.
+- Le interrogazioni sono testi del corpus tenuti fuori dall'indice; domande vere di utenti solo su MS MARCO, che però non ha date e quindi non ha deriva.
+- DeDrift è riscritto dal testo del paper, perché non risulta codice pubblicato; Ada-IVF e SPFresh non sono stati provati.
+- Faiss 1.16.0. Il ramo principale di Faiss ha poi cambiato la rianimazione dei cluster: lì sono stati rifatti l'aggiornamento singolo e una corsa a scala grande (`results/*_main.md`, `results/check_main_revival_*.md`), con Faiss compilato dai sorgenti al commit 16a95d6.

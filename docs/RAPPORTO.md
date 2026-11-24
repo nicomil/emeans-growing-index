@@ -128,16 +128,58 @@ Tre cose cambiano di poco rispetto a quanto scritto sopra:
 
 I tempi di questo insieme sono stati misurati di giorno, a macchina in uso: il carico registrato (mediana 2,1, massimo 5,5) è in linea con quello notturno (mediana 1,9-2,4) e gli intervalli sono altrettanto stretti (6,4 s [6,4; 6,5]).
 
+## La scala grande: 1,5 milioni di testi (23 e 24 novembre)
+
+Per togliere i limiti più contestabili (indici piccoli, niente domande vere, nessun confronto con la letteratura) l'esperimento è stato rifatto a scala più grande con `exp_scale.py`, che usa solo codice di Faiss: 800.000 testi iniziali, 10 aggiornamenti da 75.000, 16.384 centroidi, sempre sul MacBook Air M1 con 16 GB.
+
+Due archivi: tutti gli abstract di arXiv dal 2007 al 2021 in ordine di data (1.585.373 testi, deriva vera), e 1.600.000 passaggi di MS MARCO in ordine casuale (nessuna deriva) interrogati con 3.000 domande vere di utenti di Bing.
+
+Recall@10 dopo i 10 aggiornamenti, Faiss 1.16.0. arXiv: media di 3 seed, scarto tra seed al più 0,007. MS MARCO: un seed.
+
+| Strategia | arXiv, 1% letto | arXiv, 0,1% letto | MS MARCO, 1% letto | MS MARCO, 0,1% letto |
+|---|---|---|---|---|
+| mai aggiornare | 0,989 | 0,867 | 0,928 | 0,807 |
+| uso ingenuo di e-means, liste lasciate come sono | 0,085 | 0,056 | 0,080 | 0,055 |
+| uso ingenuo di e-means, liste ricostruite | 0,944 | 0,608 | 0,830 | 0,568 |
+| e-means con massa iniziale e media mobile, liste lasciate | 0,991 | 0,880 | 0,929 | 0,807 |
+| DeDrift-Lazy | 0,991 | 0,878 | 0,929 | 0,808 |
+| DeDrift-Hybrid | 0,991 | 0,886 | 0,929 | 0,809 |
+| da zero, e-means 3 epoche | 0,992 | 0,898 | 0,932 | 0,814 |
+| da zero, e-means 10 epoche | 0,992 | 0,903 | 0,934 | 0,823 |
+
+Cosa dice:
+
+1. **La trappola regge a scala grande e con domande vere.** Con le liste lasciate come sono il recall va a 0,08 su entrambi gli archivi. Con le liste ricostruite l'uso ingenuo perde 4,5 punti su arXiv e 10 su MS MARCO leggendo l'1% dell'indice, 26 e 24 punti leggendo lo 0,1%. Su MS MARCO non c'è deriva: il danno viene tutto dall'aggiornamento, non dai dati.
+2. **«Mai aggiornare» qui costa poco.** Su arXiv perde 0,3 punti all'1% e 3,6 allo 0,1% rispetto al ricalcolo; su MS MARCO, senza deriva, meno di un punto. All'1% letto (164 liste su 16.384) il punto di lavoro è quasi saturo: la colonna che distingue le strategie è lo 0,1%.
+3. **La correzione di e-means vale quanto DeDrift-Lazy** (0,880 contro 0,878) e resta 0,6 punti sotto DeDrift-Hybrid; il ricalcolo da zero è sopra tutti.
+4. **Sul ramo principale di Faiss** (`results/exp_scale_arxiv-full_seed0_main.md`, un seed) l'uso ingenuo dà 0,067 con le liste lasciate e 0,953 ricostruite. La nostra correzione lì non basta più (0,091 e 0,975), come già visto a scala piccola: la nuova rianimazione dei cluster sposta i centroidi che non ricevono testi.
+
+**DeDrift è riscritto da me dal testo del paper**, perché non risulta codice pubblicato. Il paper non dice quante iterazioni di k-means usa Split né da dove parte. `check_split.py` misura quanto pesano: con 5, 10 o 25 iterazioni Hybrid dà 0,883-0,885 (0,1% letto); partendo dai centroidi vecchi invece che da punti a caso scende a 0,878. La scelta fatta è quindi quella più favorevole a DeDrift.
+
+**Tempi a macchina libera** (`results/bench_scale_*.md`, notte del 24, carico al più 2,0, due ripetizioni): una passata sui 1.550.000 testi costa 59 s con e-means e 55 s con k-means; riassegnare tutti i vettori 55 s. Ricalcolare da zero con e-means a 3 epoche e riassegnare richiede quindi circa 4 minuti.
+
+| | Tempo di addestramento | arXiv, 1% / 0,1% | MS MARCO, 1% / 0,1% |
+|---|---|---|---|
+| e-means, 3 epoche | 178 s | 0,993 / 0,900 | 0,931 / 0,814 |
+| e-means, 10 epoche | 590 s | 0,992 / 0,902 | 0,936 / 0,820 |
+| k-means, 5 iterazioni | 277 s | 0,991 / 0,893 | 0,937 / 0,813 |
+| k-means, 10 iterazioni | 553 s | 0,992 / 0,898 | 0,937 / 0,820 |
+| k-means, 25 iterazioni | 1.382 s | 0,992 / 0,902 | 0,939 / 0,824 |
+
+Il vantaggio di velocità di e-means dipende dall'archivio, come a scala piccola. Su arXiv 3 epoche (178 s) danno il recall di k-means a 10-25 iterazioni (553-1.382 s). Su MS MARCO no: leggendo l'1% bastano 5 iterazioni di k-means per superare e-means a 10 epoche, e allo 0,1% e-means a 3 epoche vale k-means a 5 iterazioni, con un vantaggio di una volta e mezza.
+
 ## Cosa non è stato fatto
 
 1. **L'articolo lungo** previsto dal piano.
-2. **Scale più grandi di 200.000 vettori**, interrogazioni di utenti veri, confronto con i metodi della letteratura sulla deriva.
+2. **Scale oltre 1,5 milioni di vettori**, indici con compressione, altri metodi della letteratura sulla deriva (Ada-IVF, SPFresh).
 
 ## Limiti che restano
 
-- Un portatile, indici da 200.000 vettori, tre seed per insieme di dati.
+- Un portatile; indici da 200.000 vettori con tre seed per insieme di dati, più due archivi da 1.550.000 (arXiv con tre seed, MS MARCO con uno).
 - Gli intervalli di confidenza riguardano le interrogazioni, non la variabilità tra corpus.
-- Le interrogazioni sono testi del corpus tenuti fuori, non domande.
+- Le interrogazioni sono testi del corpus tenuti fuori, non domande, tranne che su MS MARCO. MS MARCO non ha date: lì manca la deriva.
+- DeDrift è una riscrittura dal paper, non il codice degli autori.
+- Solo testi in inglese.
 - "Liste ricostruite" significa ricostruite una volta, al momento della misura, e non dopo ogni aggiornamento. Chi ricostruisce le liste ha in mano tutti i vettori e potrebbe riaddestrare su tutti: è il caso più favorevole all'uso ingenuo, non il più realistico.
 - L'aggiornamento da 10.000 testi con 2.048 centroidi (circa 5 testi per centroide) è sotto l'intervallo su cui sono state tarate le leggi di scala di e-means (da 100.000 righe in su).
 - Un solo punto di lavoro per la ricerca: indice IVF senza compressione, due quote di vettori letti.
@@ -152,3 +194,5 @@ I tempi di questo insieme sono stati misurati di giorno, a macchina in uso: il c
 ## Stato della coda
 
 Finita alle 10:35 del 23 novembre, nessun lavoro fallito. Registro in `data/night.log`.
+
+La coda a scala grande (`run_night4.sh`) è finita alle 06:37 del 24 novembre, nessun lavoro fallito. Registro in `data/night4.log`.
