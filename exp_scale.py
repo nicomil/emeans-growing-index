@@ -150,7 +150,9 @@ def load(corpus, n_docs):
     asked = Path(f"data/{corpus}_queries.npy")
     if asked.exists():  # real user questions instead of the held-out texts
         queries = np.load(asked)[:N_QUERIES]
-        return np.ascontiguousarray(x[:n_docs]), dates[:n_docs], queries, np.full(len(queries), dates[n_docs - 1])
+        when = Path(f"data/{corpus}_query_dates.npy")  # without it the questions count as asked at the end
+        query_dates = np.load(when)[:N_QUERIES] if when.exists() else np.full(len(queries), dates[n_docs - 1])
+        return np.ascontiguousarray(x[:n_docs]), dates[:n_docs], queries, query_dates
     held = np.zeros(len(x), dtype=bool)
     held[np.random.default_rng(0).choice(len(x), N_QUERIES, replace=False)] = True
     kept = np.flatnonzero(~held)[:n_docs]
