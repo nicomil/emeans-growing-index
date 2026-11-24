@@ -17,3 +17,6 @@ vendor/
 .archify/
 docs/*.finalize*.json
 docs/*.delivery*.json
+# materiale per il post, non pubblicato
+docs/post-linkedin*.png
+docs/post_image*.py
