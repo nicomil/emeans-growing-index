@@ -2,9 +2,28 @@
 
 An independent study of [e-means](https://arxiv.org/abs/2611.09501), the k-means variant published by Meta FAIR in November 2026 and shipped in Faiss 1.16.0, in a situation the paper does not cover: a cluster-based vector index (IVF) that receives new documents over time.
 
-The results are in `results/SINTESI.md`, the report in `docs/REPORT.md`. The project brief (`brief.md`) and the step-by-step journey, with the reviews, are in `docs/journey/`.
+The full tables, with confidence intervals, are in `results/SUMMARY.md`. A beginner-friendly explanation is in `docs/study.html`. The project brief (`brief.md`) and the step-by-step journey, with the reviews, are in `docs/journey/`.
 
-Result tables in `results/` are script output and are in Italian, as are code comments.
+## Results in brief
+
+An IVF index of 800,000 vectors receives ten batches of 75,000 new ones (1.55 million at the end, 16,384 centroids). Recall@10 against exact search, scanning 1% of the vectors per query, Faiss 1.16.0, on a MacBook Air M1 with 16 GB:
+
+| After ten refreshes | arXiv abstracts, date order | MS MARCO passages, real Bing queries |
+|---|---:|---:|
+| Never retrain the centroids, only add the new vectors | 0.989 | 0.928 |
+| Retrain with e-means on the new vectors only, starting from the old centroids; old vectors left in their lists | 0.085 | 0.080 |
+| Same centroids, all vectors reassigned | 0.944 | 0.830 |
+| Full rebuild on all vectors, e-means, 3 epochs | 0.992 | 0.932 |
+
+arXiv is the mean of three seeds (spread at most 0.007); MS MARCO is one seed and has no dates, so no drift.
+
+- **The naive refresh breaks the index silently.** `NumpyEmeans(d, k, nepochs=1).train(new_vectors, init_centroids=old_centroids)` raises no error and no warning. The starting centroids carry almost no weight (the paper says so in §3.1), so the result describes the new batch only.
+- **A full rebuild is cheap.** Three e-means epochs plus reassigning all 1.55 million vectors take about 4 minutes on the laptop.
+- **Doing nothing holds up well** at this operating point: 0.3 points below the 3-epoch rebuild on arXiv scanning 1%, 3.1 points scanning 0.1% (0.867 against 0.898).
+- **The speed advantage of e-means over k-means depends on the dataset.** On arXiv, 3 epochs (178 s) match the recall of 10 to 25 k-means iterations (553 to 1,382 s); on MS MARCO, 5 k-means iterations (277 s) are enough to match them.
+- **On the Faiss main branch** (commit 16a95d6, one seed) the naive refresh still collapses: 0.067 with the lists left as they are, 0.953 with all vectors reassigned.
+
+The same pattern holds at 200,000 vectors on four datasets (HuffPost news and arXiv, two embedding models); see `results/SUMMARY.md`.
 
 ## What is here
 
@@ -36,9 +55,9 @@ uv run pytest -q                                   # tests, a few seconds
 
 # synthetic data
 uv run exp_warm.py                                 # about 1 minute
-uv run exp_new_only.py sovrapposti                 # also: netti, senza-deriva; 3-4 minutes each
-uv run exp_rule.py sovrapposti > results/exp_rule_sovrapposti.md
-uv run exp_rule.py netti > results/exp_rule_netti.md
+uv run exp_new_only.py overlapping                 # also: separated, no-drift; 3-4 minutes each
+uv run exp_rule.py overlapping > results/exp_rule_overlapping.md
+uv run exp_rule.py separated > results/exp_rule_separated.md
 uv run exp_sequence.py > results/exp_sequence.md   # requires the previous command
 
 # real data: embeddings first, once per dataset
@@ -53,7 +72,7 @@ uv run check_recall_vs_faiss.py news > results/check_recall_news.md
 uv run bench_rebuild.py news > results/bench_rebuild_news.md        # on its own, on an idle machine
 uv run check_faiss_naive.py news > results/check_faiss_naive_news.md
 uv run check_naive_baselines.py news > results/check_naive_baselines_news.md
-uv run analyze.py > results/SINTESI.md
+uv run analyze.py > results/SUMMARY.md
 ```
 
 `run_night2.sh` runs the real-data part in a row, one job at a time.

@@ -1,14 +1,14 @@
-"""Tempi del ricalcolo completo a scala grande: e-means contro k-means, implementazioni di Faiss.
+"""Timings of the full rebuild at large scale: e-means against k-means, Faiss implementations.
 
-Va eseguito da solo, senza altri calcoli in corso sulla macchina.
+Must be run on its own, with no other computation running on the machine.
 
-Sui testi dell'indice finale di exp_scale.py (1.550.000 a scala grande) misura, per e-means a
-1, 3, 5, 10 epoche e per k-means a 5, 10, 25 iterazioni: il tempo di addestramento dei centroidi,
-il tempo per riassegnare tutti i vettori, e il recall@10 dell'indice che ne risulta. Due
-ripetizioni con seed diversi, la seconda in ordine inverso. Prima di ogni misura registra il
-carico della macchina. I risultati sono salvati dopo ogni misura.
+On the texts of the final index of exp_scale.py (1,550,000 at large scale) it measures, for e-means at
+1, 3, 5, 10 epochs and for k-means at 5, 10, 25 iterations: the training time of the centroids,
+the time to reassign all the vectors, and the recall@10 of the resulting index. Two
+repetitions with different seeds, the second in reverse order. Before every measurement it records
+the load of the machine. The results are saved after every measurement.
 
-Uso: uv run bench_scale.py arxiv-full [large|small] > results/bench_scale_arxiv-full.md
+Usage: uv run bench_scale.py arxiv-full [large|small] > results/bench_scale_arxiv-full.md
 """
 
 import json
@@ -51,16 +51,16 @@ if __name__ == "__main__":
             centroids = np.ascontiguousarray(centroids, dtype=np.float32)
             labels, assign_seconds = exp_scale.timed(exp_scale.assign, docs, centroids)
             found = recall(docs, labels, centroids, queries, threshold).mean(axis=1) / TOP
-            rows.append({"metodo": method, "passate": amount, "ripetizione": rep, "carico": load, "addestramento": seconds,
-                         "riassegnazione": assign_seconds, "recall 0.001": float(found[0]), "recall 0.01": float(found[1])})
-            json.dump({"righe": rows, "faiss": faiss.__version__, "testi": len(docs), "centroidi": k}, open(stem + ".json", "w"), ensure_ascii=False, indent=1)
-            print(f"{method} {amount}, ripetizione {rep}: {seconds:.1f} s, recall {found[1]:.3f}", file=sys.stderr, flush=True)
+            rows.append({"method": method, "passes": amount, "repetition": rep, "load": load, "training": seconds,
+                         "reassignment": assign_seconds, "recall 0.001": float(found[0]), "recall 0.01": float(found[1])})
+            json.dump({"rows": rows, "faiss": faiss.__version__, "texts": len(docs), "centroids": k}, open(stem + ".json", "w"), ensure_ascii=False, indent=1)
+            print(f"{method} {amount}, repetition {rep}: {seconds:.1f} s, recall {found[1]:.3f}", file=sys.stderr, flush=True)
 
-    print(f"Insieme di dati: {corpus}. {len(docs)} testi, {k} centroidi, {d} dimensioni. Faiss {faiss.__version__}, {os.cpu_count()} core.")
-    print(f"Media su {REPS} ripetizioni; carico massimo della macchina prima di una misura: {max(r['carico'] for r in rows):.1f}.\n")
-    print("| Metodo | Passate sui dati | Addestramento (s) | Riassegnazione (s) | Recall@10, 1% letto | Recall@10, 0,1% letto |")
+    print(f"Dataset: {corpus}. {len(docs)} texts, {k} centroids, {d} dimensions. Faiss {faiss.__version__}, {os.cpu_count()} cores.")
+    print(f"Mean over {REPS} repetitions; maximum load of the machine before a measurement: {max(r['load'] for r in rows):.1f}.\n")
+    print("| Method | Passes over the data | Training (s) | Reassignment (s) | Recall@10, 1% read | Recall@10, 0.1% read |")
     print("|---|---|---|---|---|---|")
     for method, amount in CONFIGS:
-        mine = [r for r in rows if (r["metodo"], r["passate"]) == (method, amount)]
+        mine = [r for r in rows if (r["method"], r["passes"]) == (method, amount)]
         mean = lambda key: np.mean([r[key] for r in mine])
-        print(f"| {method} | {amount} | {mean('addestramento'):.1f} | {mean('riassegnazione'):.1f} | {mean('recall 0.01'):.3f} | {mean('recall 0.001'):.3f} |")
+        print(f"| {method} | {amount} | {mean('training'):.1f} | {mean('reassignment'):.1f} | {mean('recall 0.01'):.3f} | {mean('recall 0.001'):.3f} |")

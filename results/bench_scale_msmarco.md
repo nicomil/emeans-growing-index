@@ -1,7 +1,7 @@
-Insieme di dati: msmarco. 1550000 testi, 16384 centroidi, 384 dimensioni. Faiss 1.16.0, 8 core.
-Media su 2 ripetizioni; carico massimo della macchina prima di una misura: 2.0.
+Dataset: msmarco. 1550000 texts, 16384 centroids, 384 dimensions. Faiss 1.16.0, 8 cores.
+Mean over 2 repetitions; maximum load of the machine before a measurement: 2.0.
 
-| Metodo | Passate sui dati | Addestramento (s) | Riassegnazione (s) | Recall@10, 1% letto | Recall@10, 0,1% letto |
+| Method | Passes over the data | Training (s) | Reassignment (s) | Recall@10, 1% read | Recall@10, 0.1% read |
 |---|---|---|---|---|---|
 | e-means | 1 | 59.5 | 55.0 | 0.924 | 0.793 |
 | e-means | 3 | 177.9 | 55.0 | 0.931 | 0.814 |

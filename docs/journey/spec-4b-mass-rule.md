@@ -23,7 +23,7 @@ context:
 
 **Code**
 
-- `exp_rule.py`: `uv run exp_rule.py sovrapposti > results/exp_rule_sovrapposti.md` fits the rules and evaluates them (about a minute and a half); with `netti` it evaluates the same rules, without refitting them, on data with well-separated groups. Parameters in `results/exp_rule_fit.json`; full grids and evaluations in the `.json` files next to it.
+- `exp_rule.py`: `uv run exp_rule.py overlapping > results/exp_rule_overlapping.md` fits the rules and evaluates them (about a minute and a half); with `separated` it evaluates the same rules, without refitting them, on data with well-separated groups. Parameters in `results/exp_rule_fit.json`; full grids and evaluations in the `.json` files next to it.
 - `test_emeans.py`: one test on the fitting procedure.
 
 **Design**

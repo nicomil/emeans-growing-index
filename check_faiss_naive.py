@@ -1,19 +1,19 @@
-"""L'uso ingenuo di e-means e la sua correzione, fatti con il codice di Faiss.
+"""The naive use of e-means and its fix, done with the Faiss code.
 
-Il crollo del recall è stato misurato anche con emeans.py, la nostra riscrittura.
-Qui lo stesso aggiornamento sui soli testi nuovi è fatto con NumpyEmeans di Faiss 1.16.0:
+The collapse of the recall was also measured with emeans.py, our rewrite.
+Here the same update on the new texts only is done with NumpyEmeans of Faiss 1.16.0:
 
-  ingenuo:  NumpyEmeans.train(nuovi, init_centroids=vecchi), senza toccare nulla;
-  corretto: lo stesso passaggio guidato a mano con begin / accumulate / update,
-            cambiando due cose: la massa iniziale (passo × numero di testi della
-            lista, scritta nell'attributo privato _usage, perché non c'è un modo
-            pubblico) e la lettura dei centroidi (current_centroids, cioè la media
-            mobile, invece delle medie finali di finalize).
+  naive: NumpyEmeans.train(new, init_centroids=old), without touching anything;
+  fixed: the same pass driven by hand with begin / accumulate / update,
+         changing two things: the initial mass (step × number of texts in the
+         list, written into the private attribute _usage, because there is no
+         public way) and the read-out of the centroids (current_centroids, i.e. the
+         moving average, instead of the final means of finalize).
 
-Se la versione corretta con il codice di Faiss dà lo stesso recall della nostra
-riscrittura con massa e senza medie finali, la causa è dimostrata dentro Faiss.
+If the fixed version with the Faiss code gives the same recall as our rewrite
+with mass and without final means, the cause is demonstrated inside Faiss.
 
-Uso: uv run check_faiss_naive.py news > results/check_faiss_naive_news.md
+Usage: uv run check_faiss_naive.py news > results/check_faiss_naive_news.md
 """
 
 import sys
@@ -33,7 +33,7 @@ def faiss_naive(centroids, counts, added, seed):
 
 
 def faiss_fixed(centroids, counts, added, seed):
-    """Stesso passaggio, con massa iniziale e lettura della media mobile. Solo codice di Faiss."""
+    """Same pass, with initial mass and read-out of the moving average. Faiss code only."""
     em = NumpyEmeans(exp_real.D, K, nepochs=1, seed=seed)
     em.begin(len(added), centroids.astype(np.float32))
     em._usage[:] = em.recipe["alpha0"] * counts
@@ -45,11 +45,11 @@ def faiss_fixed(centroids, counts, added, seed):
 
 
 UPDATES = {
-    "mai aggiornare": lambda c, counts, added, seed: c,
-    "Faiss, ingenuo: train(nuovi, init_centroids=vecchi)": faiss_naive,
-    "Faiss, con massa iniziale e lettura della media mobile": faiss_fixed,
-    "nostra riscrittura, ingenuo": ablation(False, True, True),
-    "nostra riscrittura, con massa e senza medie finali": ablation(True, True, False),
+    "never update": lambda c, counts, added, seed: c,
+    "Faiss, naive: train(new, init_centroids=old)": faiss_naive,
+    "Faiss, with initial mass and read-out of the moving average": faiss_fixed,
+    "our rewrite, naive": ablation(False, True, True),
+    "our rewrite, with mass and without final means": ablation(True, True, False),
 }
 
 if __name__ == "__main__":
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             for name, update in UPDATES.items():
                 centroids, labels = state[name]
                 counts = np.bincount(labels, minlength=K).astype(np.float64)
-                added = docs64[n - CHUNK : n] if name.startswith(("nostra", "mai")) else np.ascontiguousarray(docs[n - CHUNK : n])
+                added = docs64[n - CHUNK : n] if name.startswith(("our", "never")) else np.ascontiguousarray(docs[n - CHUNK : n])
                 centroids = update(centroids, counts, added, 1000 * seed + r)
                 state[name] = centroids, np.concatenate([labels, assign_all(docs64[n - CHUNK : n], centroids)[0]])
             if r in REPORT:
@@ -76,8 +76,8 @@ if __name__ == "__main__":
                 for name, (centroids, labels) in state.items():
                     found = recall(docs[:n], labels, centroids, queries[usable], threshold)
                     results[name][r].append(float(found[one].mean()) / TOP)
-    print(f"Insieme di dati: {corpus}. Recall@{TOP} leggendo l'1% dell'indice, liste lasciate come sono, mediana [min; max] su {len(SEEDS)} seed.\n")
-    print("| Aggiornamento sui soli testi nuovi | " + " | ".join(f"Dopo {r} gir{'o' if r == 1 else 'i'}" for r in REPORT) + " |")
+    print(f"Dataset: {corpus}. Recall@{TOP} reading 1% of the index, lists kept as they are, median [min; max] over {len(SEEDS)} seeds.\n")
+    print("| Update on the new texts only | " + " | ".join(f"After {r} round{'' if r == 1 else 's'}" for r in REPORT) + " |")
     print("|---|" + "---|" * len(REPORT))
     for name, by_round in results.items():
         cells = [f"{np.median(v):.3f} [{min(v):.3f}; {max(v):.3f}]" for v in by_round.values()]

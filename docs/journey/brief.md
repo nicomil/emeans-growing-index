@@ -2,7 +2,7 @@
 title: "e-means and indexes that change: refresh or rebuild?"
 status: approved
 created: 2026-11-22
-updated: 2026-11-23
+updated: 2026-11-24
 ---
 
 # Project brief: e-means and indexes that change
@@ -67,18 +67,18 @@ There is no theoretical contribution. The value is in the check, in the warning 
 - **Those who develop vector engines**, because the warning concerns a use that will come naturally to their users.
 - **Those who study or teach these systems**: the short code and the animation show how the algorithm works.
 
-Those who use graph indexes (HNSW), that is, most small and medium RAG projects, are not directly affected. For this reason the article opens with a context preamble: what a RAG system is, how the two kinds of index work, when one moves from one to the other, and where the study sits.
+Those who use graph indexes (HNSW), that is, most small and medium RAG projects, are not directly affected. For this reason the study page (`docs/study.html`) opens with a context preamble: what a RAG system is, how the two kinds of index work, when one moves from one to the other, and where the study sits.
 
 ## Success criteria
 
 1. The four results repeat on a second corpus, or it is stated where they do not repeat.
 2. Every number in the text has an uncertainty interval and a source in the repository.
 3. A reader can redo every table with one command.
-4. There is an article in Italian that a technical person reads to the end and comes away from knowing what to do.
+4. There is a write-up that a technical person reads to the end and comes away from knowing what to do.
 
 ## Scope
 
-**In:** second corpus (arXiv abstracts); intervals on recall; recall at two cost levels; repeated timings; writing the article; final review.
+**In:** second corpus (arXiv abstracts); intervals on recall; recall at two cost levels; repeated timings; the write-up; final review.
 
 **Out:** a different mass for each cluster; reassignment of only the clusters that change; scaling law for the incremental case; direct comparison with DeDrift, Ada-IVF and SPFresh; Italian corpus; GPU. They are to be cited as future work.
 
@@ -91,4 +91,16 @@ Those who use graph indexes (HNSW), that is, most small and medium RAG projects,
 
 ## Where it can go
 
-If the second corpus confirms the results, the natural step is an English version and a documentation request in the Faiss repository about the incremental use. The research direction left open is local reassignment: refresh with the new documents and re-read only the lists whose centroids have moved.
+If the second corpus confirms the results, the natural step is a documentation request in the Faiss repository about the incremental use. The research direction left open is local reassignment: refresh with the new documents and re-read only the lists whose centroids have moved.
+
+## After the brief (24 November 2026)
+
+The work went beyond this brief. What changed, with the numbers in `results/`:
+
+- **The results repeat** on a second corpus (arXiv abstracts) and with a second embedding model (`bge-base-en-v1.5`), four datasets in all.
+- **Finding 3 was scaled back.** The drop from 0.83 to 0.05 holds when the old vectors stay in the lists they were added to. With all vectors reassigned to the refreshed centroids, one naive refresh takes recall from 0.83 to 0.42 on the news. Both conditions are now reported side by side.
+- **Two items listed as out of scope were done**: a comparison with DeDrift, rewritten from the paper because no public code was found, and a larger scale, 1.55 million vectors with 16,384 centroids, on arXiv and on MS MARCO with real user queries.
+- **The speed claim is narrower** than "a tenth of the passes": at equal recall the advantage of e-means over k-means depends on the dataset and on how much of the index is read.
+- **Faiss main branch** (commit 16a95d6) was tested too: the naive refresh still loses recall there, and the cluster revival introduced after 1.16.0 changes which fixes work.
+
+The current limits are in the README.

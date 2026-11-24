@@ -1,9 +1,9 @@
-Insieme di dati: arxiv. 200000 vettori a 384 dimensioni, 2048 centroidi, 2900 testi tenuti fuori.
-Macchina: Apple M1, macOS-27.2.1-arm64-arm-64bit. Faiss 1.16.0 con 8 thread, NumPy 2.5.5, Python 3.12.11.
-6 ripetizioni in ordine alternato. Tempo: mediana [minimo; massimo]. Le altre colonne: mediana.
-Carico della macchina prima delle misure (media a 1 minuto): mediana 2.2, massimo 5.0. Comprende il calcolo del recall della misura precedente, che usa un solo core.
+Dataset: arxiv. 200000 vectors of 384 dimensions, 2048 centroids, 2900 held-out texts.
+Machine: Apple M1, macOS-27.2.1-arm64-arm-64bit. Faiss 1.16.0 with 8 threads, NumPy 2.5.5, Python 3.12.11.
+6 repetitions in alternating order. Time: median [minimum; maximum]. The other columns: median.
+Load of the machine before the measurements (1-minute average): median 2.2, maximum 5.0. It includes the recall computation of the previous measurement, which uses a single core.
 
-| Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 0,1% letto | Recall, 1% letto |
+| Method | Passes | Time | Training error | Error on the held-out texts | Recall, 0.1% read | Recall, 1% read |
 |---|---|---|---|---|---|---|
 | e-means | 1 | 1.5 s [1.5; 1.5] | 0.5181 | 0.5278 | 0.554 | 0.933 |
 | e-means | 2 | 2.9 s [2.8; 2.9] | 0.5075 | 0.5202 | 0.587 | 0.940 |

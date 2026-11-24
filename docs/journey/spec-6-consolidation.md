@@ -38,11 +38,11 @@ Jobs in a queue, one at a time, logged in `data/night.log`: embeddings, experime
 
 **New or rewritten files**
 
-`exp_real.py`, `bench_rebuild.py`, `check_recall_vs_faiss.py`, `check_faiss_naive.py`, `analyze.py`, `embed_corpus.py`, `run_night2.sh`, `README.md`, `docs/REPORT.md`, `docs/linkedin-post-bozza.md`, `docs/faiss-issue-bozza.md`, `docs/repro_emeans_init_centroids.py`, `results/SINTESI.md` and the results files per dataset.
+`exp_real.py`, `bench_rebuild.py`, `check_recall_vs_faiss.py`, `check_faiss_naive.py`, `analyze.py`, `embed_corpus.py`, `run_night2.sh`, `README.md`, `docs/REPORT.md` (since folded into the README), `docs/linkedin-post-bozza.md`, `docs/faiss-issue-bozza.md`, `docs/repro_emeans_init_centroids.py`, `results/SUMMARY.md` and the results files per dataset.
 
 **Results**
 
-They are in `results/SINTESI.md`; the reasoned summary is in `docs/REPORT.md`. In short, on three datasets:
+They are in `results/SUMMARY.md`; the reasoned summary is in `docs/REPORT.md` (since folded into the README). In short, on three datasets:
 
 - the naive use of e-means (old centroids as the start, training on the new texts only) lowers recall by 30-58% after a single update of 10,000 texts even when the lists are rebuilt, as much as a start from random rows; k-means used the same way loses 5-24%; with 50,000 new texts e-means loses 4-15%;
 - the causes are the almost zero weight of the starting centroids and the final means computed on the new texts only; with both fixed using the Faiss code, recall returns to the level of classic mini-batch k-means;
@@ -62,7 +62,7 @@ They are in `results/SINTESI.md`; the reasoned summary is in `docs/REPORT.md`. I
 **Not done**
 
 - The test on the Faiss main branch was not done during the night: the system denied execution of the freshly downloaded sources and the block was not worked around. It was done on the morning of 23 November with the user's authorization, building Faiss at commit 16a95d6: the damage of the naive use remains (from 16% to 47% less recall) and, with the new cluster revival, initial mass and moving average are no longer enough to remove it.
-- arXiv with the second embedding model had not finished by the morning: a restart of the machine interrupted the queue. Resumed and completed at 10:35 on 23 November; results in agreement with the other three datasets, summarised in `docs/REPORT.md`.
+- arXiv with the second embedding model had not finished by the morning: a restart of the machine interrupted the queue. Resumed and completed at 10:35 on 23 November; results in agreement with the other three datasets, summarised in `docs/REPORT.md` (since folded into the README).
 - The long article foreseen by the plan.
 
 ## Review Triage Log

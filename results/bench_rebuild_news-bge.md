@@ -1,9 +1,9 @@
-Insieme di dati: news-bge. 200000 vettori a 768 dimensioni, 2048 centroidi, 2898 testi tenuti fuori.
-Macchina: Apple M1, macOS-27.2.1-arm64-arm-64bit. Faiss 1.16.0 con 8 thread, NumPy 2.5.5, Python 3.12.11.
-6 ripetizioni in ordine alternato. Tempo: mediana [minimo; massimo]. Le altre colonne: mediana.
-Carico della macchina prima delle misure (media a 1 minuto): mediana 2.4, massimo 4.0. Comprende il calcolo del recall della misura precedente, che usa un solo core.
+Dataset: news-bge. 200000 vectors of 768 dimensions, 2048 centroids, 2898 held-out texts.
+Machine: Apple M1, macOS-27.2.1-arm64-arm-64bit. Faiss 1.16.0 with 8 threads, NumPy 2.5.5, Python 3.12.11.
+6 repetitions in alternating order. Time: median [minimum; maximum]. The other columns: median.
+Load of the machine before the measurements (1-minute average): median 2.4, maximum 4.0. It includes the recall computation of the previous measurement, which uses a single core.
 
-| Metodo | Passate | Tempo | Errore di addestramento | Errore sui testi tenuti fuori | Recall, 0,1% letto | Recall, 1% letto |
+| Method | Passes | Time | Training error | Error on the held-out texts | Recall, 0.1% read | Recall, 1% read |
 |---|---|---|---|---|---|---|
 | e-means | 1 | 2.3 s [2.3; 2.3] | 0.4196 | 0.4293 | 0.429 | 0.791 |
 | e-means | 2 | 4.5 s [4.3; 4.7] | 0.4101 | 0.4226 | 0.464 | 0.811 |

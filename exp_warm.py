@@ -1,13 +1,13 @@
-"""Passo 3: partenza a caldo di e-means su dati sintetici con deriva controllata.
+"""Step 3: warm start of e-means on synthetic data with controlled drift.
 
-Scenario. Un insieme "vecchio" è già stato raggruppato. Arrivano punti nuovi da
-zone diverse dello spazio, fino a essere una frazione f del totale. Si confronta
-come aggiornare i centroidi spendendo una sola passata sui dati aggiornati.
+Scenario. An "old" set has already been clustered. New points arrive from
+different regions of the space, until they are a fraction f of the total. We compare
+ways of updating the centroids by spending a single pass over the updated data.
 
-"Una passata" è il costo in più. Le strategie a caldo ereditano le 5 epoche già
-spese sui dati vecchi; quella con i centroidi vecchi non costa nulla.
+"One pass" is the extra cost. The warm-start strategies inherit the 5 epochs already
+spent on the old data; the one with the old centroids costs nothing.
 
-Uso: uv run exp_warm.py
+Usage: uv run exp_warm.py
 """
 
 import numpy as np
@@ -19,20 +19,21 @@ FRACTIONS = (0.05, 0.2, 0.5)
 
 
 def mixture(rng, n, components, shift, spread=0.7):
-    """Miscela di gaussiane sovrapposte.
+    """Mixture of overlapping Gaussians.
 
-    Le medie distano tra loro meno del raggio del rumore. Con medie più sparse
-    (deviazione 2) i gruppi sono netti, il risultato dipende da quanti restano senza
-    centroide e l'errore del riferimento varia del 4-8% da un seed all'altro,
-    più delle differenze che si vogliono misurare. Così varia dello 0,4%.
+    The means are closer to each other than the radius of the noise. With more
+    scattered means (deviation 2) the groups are well separated, the result depends
+    on how many are left without a centroid and the error of the reference varies by
+    4-8% from one seed to the next, more than the differences to be measured. This
+    way it varies by 0.4%.
     """
     means = rng.normal(0, spread, (components, D))
-    means[:, :8] += shift  # la deriva: i punti nuovi occupano un'altra zona in 8 dimensioni
+    means[:, :8] += shift  # the drift: the new points occupy another region in 8 dimensions
     return means[rng.integers(0, components, n)] + rng.normal(0, 1, (n, D))
 
 
 def lazy(x, centroids):
-    """Una passata di Lloyd dai centroidi vecchi: assegna, poi media. Stile DeDrift-Lazy."""
+    """One Lloyd pass from the old centroids: assign, then average. DeDrift-Lazy style."""
     labels, _ = assign_all(x, centroids)
     out = centroids.copy()
     counts = np.bincount(labels, minlength=K)
@@ -47,11 +48,11 @@ def assign_all(x, centroids, chunk=65536):
     return np.concatenate([p[0] for p in parts]), np.concatenate([p[1] for p in parts])
 
 
-REFERENCE = "da zero, 3 epoche (riferimento)"
+REFERENCE = "from scratch, 3 epochs (reference)"
 
 
 def run(fraction, seed):
-    """Errore di ogni strategia su un insieme di dati. Chiave: (nome, finalizzazione)."""
+    """Error of every strategy on one dataset. Key: (name, finalization)."""
     rng = np.random.default_rng(1000 + seed)
     old = mixture(rng, N_OLD, 200, 0.0)
     added = mixture(rng, int(N_OLD * fraction / (1 - fraction)), 40, 1.5)
@@ -62,8 +63,8 @@ def run(fraction, seed):
     share = np.bincount(assign_all(old, old_centroids)[0], minlength=K) / N_OLD
     batch = batch_law(n, K, 1, D)
     step = step_law(n, K, 1, batch)
-    # Massa a regime di un cluster che riceve solo punti vecchi: in un batch dei dati
-    # aggiornati i punti vecchi sono una frazione 1 - f.
+    # Steady-state mass of a cluster that receives only old points: in a batch of the
+    # updated data the old points are a fraction 1 - f.
     steady = batch * share * (1 - fraction)
 
     def warm(m, step_factor, finalize):
@@ -72,32 +73,32 @@ def run(fraction, seed):
             alpha0=step * step_factor, finalize=finalize,
         )
 
-    # None: la strategia non ha finalizzazione, oppure è il riferimento (sempre finalizzato).
+    # None: the strategy has no finalization, or it is the reference (always finalized).
     arms = {
-        ("centroidi vecchi, nessun ricalcolo (0 passate)", None): old_centroids,
-        ("una passata di Lloyd dai vecchi", None): lazy(x, old_centroids),
+        ("old centroids, no recomputation (0 passes)", None): old_centroids,
+        ("one Lloyd pass from the old centroids", None): lazy(x, old_centroids),
         (REFERENCE, None): emeans(x, K, epochs=3, seed=seed),
     }
     for finalize in (True, False):
-        arms[("da zero, 1 epoca", finalize)] = emeans(x, K, epochs=1, seed=seed, finalize=finalize)
+        arms[("from scratch, 1 epoch", finalize)] = emeans(x, K, epochs=1, seed=seed, finalize=finalize)
         for m, factor in ((0, 1), (1, 1), (10, 1), (100, 1), (1, 0.25), (10, 0.25)):
-            name = f"a caldo, massa {m}" + (", passo/4" if factor != 1 else "") + (" (quasi nulla, come Faiss)" if m == 0 else "")
+            name = f"warm start, mass {m}" + (", step/4" if factor != 1 else "") + (" (near zero, as in Faiss)" if m == 0 else "")
             arms[(name, finalize)] = warm(m, factor, finalize)
-    return {key: mse(x, c) for key, c in arms.items()}, f"{fraction:.0%} nuovi (n={n}, B={batch}, passo={step:.2f})"
+    return {key: mse(x, c) for key, c in arms.items()}, f"{fraction:.0%} new (n={n}, B={batch}, step={step:.2f})"
 
 
 if __name__ == "__main__":
     columns = {}
     for fraction in FRACTIONS:
         runs = [run(fraction, seed) for seed in range(SEEDS)]
-        # Confronto appaiato: l'eccesso si calcola seed per seed, sugli stessi dati.
+        # Paired comparison: the excess is computed seed by seed, on the same data.
         columns[runs[0][1]] = {
             key: np.array([100 * (r[0][key] / r[0][(REFERENCE, None)] - 1) for r in runs]) for key in runs[0][0]
         }
     for finalize in (True, False):
-        print(f"\n### {'Con' if finalize else 'Senza'} finalizzazione\n")
-        print(f"Errore in eccesso rispetto a e-means da zero con 3 epoche, finalizzato: mediana [minimo; massimo] su {SEEDS} seed.\n")
-        print("| Strategia | " + " | ".join(columns) + " |")
+        print(f"\n### {'With' if finalize else 'Without'} finalization\n")
+        print(f"Excess error relative to e-means from scratch with 3 epochs, finalized: median [minimum; maximum] over {SEEDS} seeds.\n")
+        print("| Strategy | " + " | ".join(columns) + " |")
         print("|---|" + "---|" * len(columns))
         for name, flag in next(iter(columns.values())):
             if flag in (None, finalize) and name != REFERENCE:

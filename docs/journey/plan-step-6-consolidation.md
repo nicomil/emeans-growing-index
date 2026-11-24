@@ -97,7 +97,7 @@ Review of the text with `bmad-review` (structure and prose) and a check that eve
 
 ## Decisions taken (22 November 2026)
 
-1. **Language and venue:** Italian for now.
+1. **Language and venue:** Italian at first; the repository was later translated to English.
 2. **Repository:** public, but later on.
 3. **Abandoned paths:** a section in the body of the text, not an appendix.
 4. **Second corpus:** arXiv abstracts.

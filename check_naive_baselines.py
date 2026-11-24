@@ -1,19 +1,19 @@
-"""Quanto del danno dell'uso ingenuo è specifico di e-means, e come cambia con la dimensione dell'aggiornamento?
+"""How much of the damage of the naive use is specific to e-means, and how does it change with the size of the update?
 
-Un solo aggiornamento di un indice da 100.000 testi, con 10.000 oppure 50.000 testi
-nuovi (circa 5 e circa 24 per centroide). I centroidi sono aggiornati leggendo solo
-i testi nuovi, in sei modi, tutti con codice di Faiss tranne l'ultimo:
+A single update of an index of 100,000 texts, with 10,000 or 50,000 new texts
+(about 5 and about 24 per centroid). The centroids are updated by reading only
+the new texts, in six ways, all with Faiss code except the last:
 
-  e-means, train(nuovi, init_centroids=vecchi)       l'uso ingenuo
-  e-means sui nuovi, da righe a caso                  senza alcun centroide vecchio
-  k-means, una iterazione dai centroidi vecchi        il confronto generico
-  e-means con massa iniziale e media mobile           la correzione
-  mini-batch k-means dalle dimensioni delle liste     la nostra implementazione
+  e-means, train(new, init_centroids=old)             the naive use
+  e-means on the new texts, from random rows          without any old centroid
+  k-means, one iteration from the old centroids       the generic comparison
+  e-means with initial mass and moving average        the fix
+  mini-batch k-means from the list sizes              our implementation
 
-Si misura il recall@10 leggendo l'1% dell'indice, con le liste ricostruite e con le
-liste lasciate come sono.
+The recall@10 is measured reading 1% of the index, with the lists rebuilt and with
+the lists kept as they are.
 
-Uso: uv run check_naive_baselines.py news > results/check_naive_baselines_news.md
+Usage: uv run check_naive_baselines.py news > results/check_naive_baselines_news.md
 """
 
 import sys
@@ -43,12 +43,12 @@ def faiss_lloyd(centroids, counts, added, seed):
 
 
 UPDATES = {
-    "mai aggiornare": lambda c, counts, added, seed: c,
-    "e-means di Faiss: train(nuovi, init_centroids=vecchi)": faiss_naive,
-    "e-means di Faiss sui nuovi, da righe a caso": faiss_scratch,
-    "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi": faiss_lloyd,
-    "e-means di Faiss con massa iniziale e media mobile": faiss_fixed,
-    "mini-batch k-means dalle dimensioni delle liste": lambda c, counts, added, seed: online_mean(
+    "never update": lambda c, counts, added, seed: c,
+    "Faiss e-means: train(new, init_centroids=old)": faiss_naive,
+    "Faiss e-means on the new texts, from random rows": faiss_scratch,
+    "Faiss k-means on the new texts, one iteration from the old centroids": faiss_lloyd,
+    "Faiss e-means with initial mass and moving average": faiss_fixed,
+    "mini-batch k-means from the list sizes": lambda c, counts, added, seed: online_mean(
         added.astype(np.float64), c, counts, batch_law(len(added), K, 1, exp_real.D), seed),
 }
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     docs, doc_dates, queries, query_dates = load(corpus)
     docs64 = docs.astype(np.float64)
     one = len(BUDGETS) - 1
-    results = {(size, name): {"ricostruite": [], "lasciate": []} for size in SIZES for name in UPDATES}
+    results = {(size, name): {"rebuilt": [], "kept": []} for size in SIZES for name in UPDATES}
     for seed in SEEDS:
         start = emeans(docs64[:N0], K, epochs=5, seed=seed)
         start_labels = assign_all(docs64[:N0], start)[0]
@@ -70,16 +70,16 @@ if __name__ == "__main__":
             for name, update in UPDATES.items():
                 centroids = update(start, counts, added, 1000 * seed)
                 kept = np.concatenate([start_labels, assign_all(docs64[N0:n], centroids)[0]])
-                for key, labels in (("ricostruite", assign_all(docs64[:n], centroids)[0]), ("lasciate", kept)):
+                for key, labels in (("rebuilt", assign_all(docs64[:n], centroids)[0]), ("kept", kept)):
                     found = recall(docs[:n], labels, centroids, queries[usable], threshold)
                     results[(size, name)][key].append(float(found[one].mean()) / TOP)
     cell = lambda v: f"{np.median(v):.3f} [{min(v):.3f}; {max(v):.3f}]"
-    print(f"Insieme di dati: {corpus}. Un aggiornamento di un indice da {N0} testi, {K} centroidi.")
-    print(f"Recall@{TOP} leggendo l'1% dell'indice, mediana [min; max] su {len(SEEDS)} seed.")
+    print(f"Dataset: {corpus}. One update of an index of {N0} texts, {K} centroids.")
+    print(f"Recall@{TOP} reading 1% of the index, median [min; max] over {len(SEEDS)} seeds.")
     for size in SIZES:
-        print(f"\n### {size} testi nuovi (circa {size / K:.0f} per centroide)\n")
-        print("| Centroidi aggiornati sui soli testi nuovi | Liste ricostruite | Liste lasciate come sono |")
+        print(f"\n### {size} new texts (about {size / K:.0f} per centroid)\n")
+        print("| Centroids updated on the new texts only | Lists rebuilt | Lists kept as they are |")
         print("|---|---|---|")
         for name in UPDATES:
             r = results[(size, name)]
-            print(f"| {name} | {cell(r['ricostruite'])} | {cell(r['lasciate'])} |")
+            print(f"| {name} | {cell(r['rebuilt'])} | {cell(r['kept'])} |")

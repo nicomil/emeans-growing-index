@@ -1,45 +1,46 @@
-"""Passi 5 e 6: strategie di aggiornamento di un indice su embedding veri.
+"""Steps 5 and 6: strategies for updating an index on real embeddings.
 
-L'indice parte dai primi 100.000 testi di un corpus con date e ne riceve altri
-100.000 in dieci giri da 10.000, in ordine di data: la deriva è quella vera.
+The index starts from the first 100,000 texts of a dated corpus and receives another
+100,000 in ten rounds of 10,000, in date order: the drift is the real one.
 
-Insiemi di dati (embed_corpus.py): news, arxiv con all-MiniLM-L6-v2 (384 dimensioni);
-news-bge, arxiv-bge con bge-base-en-v1.5 (768 dimensioni).
+Datasets (embed_corpus.py): news, arxiv with all-MiniLM-L6-v2 (384 dimensions);
+news-bge, arxiv-bge with bge-base-en-v1.5 (768 dimensions).
 
-Misure, ai giri riportati:
-  errore nelle liste: ogni testo resta nella lista in cui è stato inserito
-  recall@10:          per i testi tenuti fuori dall'indice si sondano le liste più
-                      vicine fino a leggere esattamente una quota dell'indice (0,1%
-                      e 1%); si conta quanti candidati sono vicini almeno quanto il
-                      decimo vero, così duplicati e pareggi non contano come errori
-Per le strategie sui soli testi nuovi si misura anche cosa succede riassegnando
-tutti i vettori ai centroidi aggiornati ("+ liste ricostruite"). La ricostruzione è
-fatta una volta sola, al giro riportato, sui centroidi ottenuti senza mai
-ricostruire prima: non è la stessa cosa che ricostruire dopo ogni aggiornamento.
-Quando il limite di lettura cade dentro una lista, i suoi testi sono letti in
-ordine casuale, così i più recenti non sono svantaggiati.
+Measures, at the reported rounds:
+  error in the lists: every text stays in the list it was inserted into
+  recall@10:          for the texts held out of the index, the nearest lists are
+                      probed until exactly a given share of the index has been read
+                      (0.1% and 1%); we count how many candidates are at least as
+                      close as the true tenth, so duplicates and ties do not count
+                      as errors
+For the strategies on the new texts only we also measure what happens when all the
+vectors are reassigned to the updated centroids ("+ lists rebuilt"). The rebuild is
+done only once, at the reported round, on the centroids obtained without ever
+rebuilding before: it is not the same as rebuilding after every update.
+When the read limit falls inside a list, its texts are read in random order, so
+the most recent ones are not at a disadvantage.
 
-Le interrogazioni sono testi del corpus, non domande di utenti: il recall vale per
-"trova testi simili". Si usano solo quelle datate entro il periodo coperto
-dall'indice, quindi il loro numero cresce a ogni giro.
+The queries are texts from the corpus, not user questions: the recall holds for
+"find similar texts". Only those dated within the period covered by the index are
+used, so their number grows at every round.
 
-Scompone le cause del danno dell'uso ingenuo di e-means (centroidi vecchi come
-partenza, addestramento sui soli testi nuovi) accendendo e spegnendo tre cose:
-la massa iniziale dei centroidi, la rianimazione dei cluster, le medie finali.
-Le tre cose interagiscono: senza massa la rianimazione ricicla centinaia di centroidi
-validi, con la massa solo le liste davvero piccole; con le medie finali la massa
-conta poco. La tabella va letta per combinazioni, non come somma di tre effetti.
+It breaks down the causes of the damage of the naive use of e-means (old centroids
+as the start, training on the new texts only) by switching three things on and off:
+the initial mass of the centroids, the revival of clusters, the final means.
+The three things interact: without mass, revival recycles hundreds of valid
+centroids, with mass only the really small lists; with the final means the mass
+matters little. The table must be read by combinations, not as a sum of three effects.
 
-"Massa" ha due unità. Nella scomposizione e nei soli testi nuovi è passo × numero
-di testi della lista: il primo aggiornamento equivale alla media con i conteggi veri.
-Nelle strategie che rileggono tutto è la massa a regime, batch × quota della lista:
-quella che il centroide avrebbe in una corsa già avviata.
+"Mass" has two units. In the breakdown and on the new texts only it is step × number
+of texts in the list: the first update is equivalent to the mean with the true counts.
+In the strategies that reread everything it is the steady-state mass, batch × share
+of the list: the one the centroid would have in a run already under way.
 
-Controllo senza deriva: gli stessi testi in ordine casuale, indice mai aggiornato.
+No-drift control: the same texts in random order, index never updated.
 
-I tempi del ricalcolo completo sono in bench_rebuild.py, che va eseguito da solo.
+The timings of the full rebuild are in bench_rebuild.py, which must be run on its own.
 
-Uso: uv run exp_real.py news > results/exp_real_news.md
+Usage: uv run exp_real.py news > results/exp_real_news.md
 """
 
 import itertools
@@ -56,37 +57,37 @@ from exp_rule import warm
 from exp_sequence import list_mse
 from exp_warm import assign_all
 
-K = 2048  # 4 · radice di 200.000, arrotondato a potenza di due, come nell'Appendice L del paper
+K = 2048  # 4 · square root of 200,000, rounded to a power of two, as in Appendix L of the paper
 N0, ROUNDS, CHUNK, N_QUERIES = 100_000, 10, 10_000, 3_000
 REPORT = (1, 5, 10)
 assert REPORT[-1] == ROUNDS
 SEEDS = (0, 1, 2)
 BUDGETS, TOP = (0.001, 0.01), 10
-D = None  # dimensione degli embedding, fissata da load()
+D = None  # dimension of the embeddings, set by load()
 
-STALE = "mai aggiornare"
-FAISS_NAIVE = "e-means di Faiss 1.16.0, impostazioni di serie"
-ONLINE = "mini-batch k-means dalle dimensioni delle liste"
-TUNED = "e-means: massa 0,2, passo/4, senza rianimazione né medie finali"
-REFERENCE = "da zero, 10 epoche (riferimento)"
-CONTROL = "mai aggiornare, testi in ordine casuale (controllo senza deriva)"
-# nome: (epoche, massa a regime, medie finali). Rileggono tutto a ogni giro, ripartendo dai propri centroidi.
+STALE = "never update"
+FAISS_NAIVE = "Faiss 1.16.0 e-means, default settings"
+ONLINE = "mini-batch k-means from the list sizes"
+TUNED = "e-means: mass 0.2, step/4, no revival, no final means"
+REFERENCE = "from scratch, 10 epochs (reference)"
+CONTROL = "never update, texts in random order (no-drift control)"
+# name: (epochs, steady-state mass, final means). They reread everything at every round, restarting from their own centroids.
 WARM = {
-    "a caldo, 1 epoca a giro": (1, False, True),
-    "a caldo, 3 epoche a giro": (3, False, True),
-    "a caldo con massa a regime, 3 epoche a giro": (3, True, True),
-    "a caldo con massa a regime, senza medie finali, 3 epoche a giro": (3, True, False),
+    "warm start, 1 epoch per round": (1, False, True),
+    "warm start, 3 epochs per round": (3, False, True),
+    "warm start with steady-state mass, 3 epochs per round": (3, True, True),
+    "warm start with steady-state mass, no final means, 3 epochs per round": (3, True, False),
 }
-COLD = {"da zero, 1 epoca": 1, "da zero, 3 epoche": 3, REFERENCE: 10}
+COLD = {"from scratch, 1 epoch": 1, "from scratch, 3 epochs": 3, REFERENCE: 10}
 
 
 def ablation_name(mass, revival, closing):
-    yes = lambda flag: "sì" if flag else "no"
-    return f"e-means: massa {yes(mass)}, rianimazione {yes(revival)}, medie finali {yes(closing)}"
+    yes = lambda flag: "yes" if flag else "no"
+    return f"e-means: mass {yes(mass)}, revival {yes(revival)}, final means {yes(closing)}"
 
 
 def ablation(mass, revival, closing):
-    """e-means sui soli testi nuovi dai centroidi vecchi, con tre interruttori."""
+    """e-means on the new texts only from the old centroids, with three switches."""
     def update(centroids, counts, added, seed):
         alpha0 = step_law(len(added), K, 1, batch_law(len(added), K, 1, D))
         init_mass = np.maximum(alpha0 * counts, INIT_MASS) if mass else INIT_MASS
@@ -101,7 +102,7 @@ def faiss_naive(centroids, counts, added, seed):
     return trained.astype(np.float64)
 
 
-# nome: aggiornamento(centroidi, dimensioni delle liste, testi nuovi, seed). Leggono solo i testi nuovi.
+# name: update(centroids, list sizes, new texts, seed). They read only the new texts.
 NEW_ONLY = {
     STALE: lambda c, counts, added, seed: c,
     FAISS_NAIVE: faiss_naive,
@@ -112,7 +113,7 @@ NEW_ONLY = {
 
 
 def tenth_score(index, queries):
-    """Somiglianza del TOP-esimo testo più vicino a ogni interrogazione. Vettori normalizzati: basta il prodotto."""
+    """Similarity of the TOP-th nearest text to every query. Normalised vectors: the dot product is enough."""
     out = []
     for start in range(0, len(queries), 500):
         scores = queries[start : start + 500] @ index.T
@@ -121,12 +122,12 @@ def tenth_score(index, queries):
 
 
 def recall(index, labels, centroids, queries, threshold, budgets=BUDGETS, nprobe=None):
-    """Quanti dei TOP veri si trovano, per ogni interrogazione e per ogni quota dell'indice letta.
+    """How many of the true TOP are found, for every query and for every share of the index read.
 
-    Restituisce interi tra 0 e TOP, di forma (quote, interrogazioni). Con nprobe si
-    sondano invece esattamente nprobe liste intere (serve al confronto con Faiss).
+    Returns integers between 0 and TOP, of shape (shares, queries). With nprobe,
+    exactly nprobe whole lists are probed instead (needed for the comparison with Faiss).
     """
-    # dentro ogni lista i testi sono in ordine casuale: una lista letta in parte non favorisce i più vecchi
+    # inside every list the texts are in random order: a partly read list does not favour the oldest ones
     order = np.lexsort((np.random.default_rng(0).random(len(labels)), labels))
     ends = np.cumsum(np.bincount(labels, minlength=K))
     starts = ends - np.bincount(labels, minlength=K)
@@ -136,7 +137,7 @@ def recall(index, labels, centroids, queries, threshold, budgets=BUDGETS, nprobe
     for i, query in enumerate(queries):
         candidates, left = [], max(limits)
         for j in ranking[i][:nprobe]:
-            members = order[starts[j] : ends[j]][:left]  # l'ultima lista è letta solo in parte
+            members = order[starts[j] : ends[j]][:left]  # the last list is read only in part
             candidates.append(members)
             left -= len(members)
             if left == 0:
@@ -148,7 +149,7 @@ def recall(index, labels, centroids, queries, threshold, budgets=BUDGETS, nprobe
 
 
 def assign_scores(queries, centroids):
-    """Distanza al quadrato da ogni centroide, a meno di una costante per interrogazione."""
+    """Squared distance from every centroid, up to a constant per query."""
     centroids = centroids.astype(np.float32)
     return (centroids**2).sum(1)[None, :] - 2.0 * queries @ centroids.T
 
@@ -159,7 +160,7 @@ def load(corpus="news"):
     dates = np.load(f"data/{corpus}_dates.npy")
     D = x.shape[1]
     assert len(x) == len(dates) >= N0 + ROUNDS * CHUNK + N_QUERIES
-    assert (dates[1:] >= dates[:-1]).all(), "i testi devono essere in ordine di data"
+    assert (dates[1:] >= dates[:-1]).all(), "the texts must be in date order"
     held = np.zeros(len(x), dtype=bool)
     held[np.random.default_rng(0).choice(len(x), N_QUERIES, replace=False)] = True
     docs, doc_dates = x[~held][: N0 + ROUNDS * CHUNK], dates[~held][: N0 + ROUNDS * CHUNK]
@@ -167,7 +168,7 @@ def load(corpus="news"):
 
 
 def run(seed, docs, doc_dates, queries, query_dates):
-    """Restituisce i numeri per strategia e giro, e i risultati interrogazione per interrogazione."""
+    """Returns the numbers per strategy and round, and the query-by-query results."""
     docs64 = docs.astype(np.float64)
     old = docs64[:N0]
     start = emeans(old, K, epochs=5, seed=seed)
@@ -185,7 +186,7 @@ def run(seed, docs, doc_dates, queries, query_dates):
         for name, (epochs, with_mass, closing) in WARM.items():
             centroids, labels = state[name]
             init_mass = INIT_MASS
-            if with_mass:  # massa che i centroidi avrebbero in una corsa già a regime
+            if with_mass:  # mass the centroids would have in a run already in steady state
                 batch = batch_law(n, K, epochs, D)
                 init_mass = np.maximum(batch * np.bincount(labels, minlength=K) / n, INIT_MASS)
             centroids = emeans(seen, K, epochs=epochs, seed=1000 * seed + r, init=centroids, init_mass=init_mass, finalize=closing)
@@ -197,7 +198,7 @@ def run(seed, docs, doc_dates, queries, query_dates):
             centroids = emeans(seen, K, epochs=epochs, seed=1000 * seed + r)
             indexes[name] = centroids, assign_all(seen, centroids)[0]
         reference = list_mse(seen, *indexes[REFERENCE])
-        # interrogazioni del periodo che l'indice copre, divise tra periodo iniziale e periodo aggiunto
+        # queries from the period the index covers, split between the initial period and the added period
         usable = query_dates <= doc_dates[n - 1]
         recent = query_dates[usable] > doc_dates[N0 - 1]
         threshold = tenth_score(docs[:n], queries[usable])
@@ -206,54 +207,54 @@ def run(seed, docs, doc_dates, queries, query_dates):
             found = recall(index, labels, centroids, queries[usable], threshold)
             per_query[f"{r}|{name}"] = found
             out.setdefault(name, {})[r] = {
-                "errore": 100 * (list_mse(index64, centroids, labels) / reference - 1),
+                "error": 100 * (list_mse(index64, centroids, labels) / reference - 1),
                 **{f"recall {b:.1%}": float(found[i].mean()) / TOP for i, b in enumerate(BUDGETS)},
-                "recall aggiunto": float(found[-1][recent].mean()) / TOP,
-                "interrogazioni": int(usable.sum()),
-                "interrogazioni aggiunte": int(recent.sum()),
-                "errore assoluto del riferimento": reference,
+                "recall added": float(found[-1][recent].mean()) / TOP,
+                "queries": int(usable.sum()),
+                "queries added": int(recent.sum()),
+                "absolute error of the reference": reference,
             }
 
         for name, (centroids, labels) in indexes.items():
             measure(name, docs[:n], seen, centroids, labels)
-            if name in NEW_ONLY and name != STALE:  # e se dopo l'aggiornamento si ricostruissero le liste?
-                measure(name + " + liste ricostruite", docs[:n], seen, centroids, assign_all(seen, centroids)[0])
-        per_query[f"{r}|recente"] = recent
-    # Controllo senza deriva: stessi testi, ordine casuale, centroidi dei primi N0 e mai aggiornati.
+            if name in NEW_ONLY and name != STALE:  # what if the lists were rebuilt after the update?
+                measure(name + " + lists rebuilt", docs[:n], seen, centroids, assign_all(seen, centroids)[0])
+        per_query[f"{r}|recent"] = recent
+    # No-drift control: same texts, random order, centroids of the first N0 and never updated.
     order = np.random.default_rng(seed).permutation(len(docs))
     centroids = emeans(docs64[order[:N0]], K, epochs=5, seed=seed)
     measure(CONTROL, docs[order], docs64[order], centroids, assign_all(docs64[order], centroids)[0])
-    out[CONTROL][ROUNDS]["recall aggiunto"] = float("nan")  # in ordine casuale la data non distingue nulla
+    out[CONTROL][ROUNDS]["recall added"] = float("nan")  # in random order the date distinguishes nothing
     return out, per_query
 
 
 if __name__ == "__main__":
     corpus = sys.argv[1] if len(sys.argv) > 1 else "news"
     docs, doc_dates, queries, query_dates = load(corpus)
-    print(f"Insieme di dati: {corpus}, {D} dimensioni.")
-    print(f"Indice iniziale: {N0} testi, dal {doc_dates[0]} al {doc_dates[N0 - 1]}.")
-    print(f"{ROUNDS} giri da {CHUNK} testi, fino al {doc_dates[-1]}. {K} liste, {len(SEEDS)} seed dell'algoritmo.")
-    print(f"Recall@{TOP} leggendo lo 0,1% e l'1% dell'indice. Mediana su {len(SEEDS)} seed. Gli intervalli sono in results/SINTESI.md.\n")
+    print(f"Dataset: {corpus}, {D} dimensions.")
+    print(f"Initial index: {N0} texts, from {doc_dates[0]} to {doc_dates[N0 - 1]}.")
+    print(f"{ROUNDS} rounds of {CHUNK} texts, up to {doc_dates[-1]}. {K} lists, {len(SEEDS)} algorithm seeds.")
+    print(f"Recall@{TOP} reading 0.1% and 1% of the index. Median over {len(SEEDS)} seeds. The intervals are in results/SUMMARY.md.\n")
     runs, arrays = [], {}
     for seed in SEEDS:
         out, per_query = run(seed, docs, doc_dates, queries, query_dates)
         runs.append(out)
         arrays.update({f"{seed}|{key}": value for key, value in per_query.items()})
-        # si salva dopo ogni seed: un arresto a metà non perde il lavoro fatto
+        # saved after every seed: a stop halfway does not lose the work done
         Path(f"results/exp_real_{corpus}.json").write_text(json.dumps(runs))
         np.savez_compressed(f"results/exp_real_{corpus}.npz", **arrays)
     med = lambda name, r, key: np.median([run_[name][r][key] for run_ in runs])
     for r in REPORT:
         row = runs[0][REFERENCE][r]
         print(
-            f"\n### Dopo {r} gir{'o' if r == 1 else 'i'} (indice fino al {doc_dates[N0 + r * CHUNK - 1]}; "
-            f"{row['interrogazioni']} interrogazioni, di cui {row['interrogazioni aggiunte']} del periodo aggiunto)\n"
+            f"\n### After {r} round{'' if r == 1 else 's'} (index up to {doc_dates[N0 + r * CHUNK - 1]}; "
+            f"{row['queries']} queries, of which {row['queries added']} from the added period)\n"
         )
-        print("| Strategia | Errore nelle liste | Recall, 0,1% letto | Recall, 1% letto | Recall 1%, periodo aggiunto |")
+        print("| Strategy | Error in the lists | Recall, 0.1% read | Recall, 1% read | Recall 1%, added period |")
         print("|---|---|---|---|---|")
         for name in runs[0]:
             if r in runs[0][name]:
                 print(
-                    f"| {name} | {med(name, r, 'errore'):+.2f}% | {med(name, r, 'recall 0.1%'):.3f} | "
-                    f"{med(name, r, 'recall 1.0%'):.3f} | {'—' if name == CONTROL else format(med(name, r, 'recall aggiunto'), '.3f')} |"
+                    f"| {name} | {med(name, r, 'error'):+.2f}% | {med(name, r, 'recall 0.1%'):.3f} | "
+                    f"{med(name, r, 'recall 1.0%'):.3f} | {'—' if name == CONTROL else format(med(name, r, 'recall added'), '.3f')} |"
                 )

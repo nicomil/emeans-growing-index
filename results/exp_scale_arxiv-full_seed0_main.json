@@ -1,350 +1,350 @@
 {
- "righe": [
+ "rows": [
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "mai aggiornare",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "never update",
+   "queries": 1612,
    "recall 0.001": 0.8816997518610421,
    "recall 0.01": 0.9898883374689825,
-   "recall 0.01, periodo aggiunto": 0.9866666666666667,
-   "sbilanciamento": 1.2019800152607347
+   "recall 0.01, added period": 0.9866666666666667,
+   "imbalance": 1.2019800152607347
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use)",
+   "queries": 1612,
    "recall 0.001": 0.1653225806451613,
    "recall 0.01": 0.27009925558312653,
-   "recall 0.01, periodo aggiunto": 0.39466666666666667,
-   "sbilanciamento": 1.1842673410716735
+   "recall 0.01, added period": 0.39466666666666667,
+   "imbalance": 1.1842673410716735
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids",
+   "queries": 1612,
    "recall 0.001": 0.7001861042183622,
    "recall 0.01": 0.8846153846153847,
-   "recall 0.01, periodo aggiunto": 0.9393333333333332,
-   "sbilanciamento": 1.1903670146612244
+   "recall 0.01, added period": 0.9393333333333332,
+   "imbalance": 1.1903670146612244
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "e-means di Faiss con massa iniziale e media mobile",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means with initial mass and moving average",
+   "queries": 1612,
    "recall 0.001": 0.3925558312655087,
    "recall 0.01": 0.45415632754342433,
-   "recall 0.01, periodo aggiunto": 0.5606666666666666,
-   "sbilanciamento": 1.179857800798041
+   "recall 0.01, added period": 0.5606666666666666,
+   "imbalance": 1.179857800798041
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "DeDrift-Lazy",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "DeDrift-Lazy",
+   "queries": 1612,
    "recall 0.001": 0.8819478908188586,
    "recall 0.01": 0.9898883374689825,
-   "recall 0.01, periodo aggiunto": 0.986,
-   "sbilanciamento": 1.2019800152607347
+   "recall 0.01, added period": 0.986,
+   "imbalance": 1.2019800152607347
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "DeDrift-Split",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "DeDrift-Split",
+   "queries": 1612,
    "recall 0.001": 0.8816997518610421,
    "recall 0.01": 0.9897642679900744,
-   "recall 0.01, periodo aggiunto": 0.9866666666666667,
-   "sbilanciamento": 1.1938349336868572
+   "recall 0.01, added period": 0.9866666666666667,
+   "imbalance": 1.1938349336868572
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "DeDrift-Hybrid",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "DeDrift-Hybrid",
+   "queries": 1612,
    "recall 0.001": 0.8818238213399503,
    "recall 0.01": 0.9897022332506203,
-   "recall 0.01, periodo aggiunto": 0.986,
-   "sbilanciamento": 1.1938349336868572
+   "recall 0.01, added period": 0.986,
+   "imbalance": 1.1938349336868572
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo) + liste ricostruite",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use) + lists rebuilt",
+   "queries": 1612,
    "recall 0.001": 0.6369727047146402,
    "recall 0.01": 0.9443548387096774,
-   "recall 0.01, periodo aggiunto": 0.9533333333333334,
-   "sbilanciamento": 4.462672689528163
+   "recall 0.01, added period": 0.9533333333333334,
+   "imbalance": 4.462672689528163
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi + liste ricostruite",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids + lists rebuilt",
+   "queries": 1612,
    "recall 0.001": 0.7921215880893301,
    "recall 0.01": 0.9762406947890818,
-   "recall 0.01, periodo aggiunto": 0.9786666666666667,
-   "sbilanciamento": 1.869618027039347
+   "recall 0.01, added period": 0.9786666666666667,
+   "imbalance": 1.869618027039347
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "e-means di Faiss con massa iniziale e media mobile + liste ricostruite",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means with initial mass and moving average + lists rebuilt",
+   "queries": 1612,
    "recall 0.001": 0.7944168734491315,
    "recall 0.01": 0.976923076923077,
-   "recall 0.01, periodo aggiunto": 0.976,
-   "sbilanciamento": 1.6041051449469388
+   "recall 0.01, added period": 0.976,
+   "imbalance": 1.6041051449469388
   },
   {
-   "giro": 1,
-   "testi": 875000,
-   "strategia": "da zero su tutti i testi, e-means 3 epoche",
-   "interrogazioni": 1612,
+   "round": 1,
+   "texts": 875000,
+   "strategy": "from scratch on all texts, e-means 3 epochs",
+   "queries": 1612,
    "recall 0.001": 0.8817617866004962,
    "recall 0.01": 0.9897022332506203,
-   "recall 0.01, periodo aggiunto": 0.9873333333333333,
-   "sbilanciamento": 1.1868021558543673
+   "recall 0.01, added period": 0.9873333333333333,
+   "imbalance": 1.1868021558543673
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "mai aggiornare",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "never update",
+   "queries": 2190,
    "recall 0.001": 0.8802739726027398,
    "recall 0.01": 0.9897716894977169,
-   "recall 0.01, periodo aggiunto": 0.9875,
-   "sbilanciamento": 1.337758474406881
+   "recall 0.01, added period": 0.9875,
+   "imbalance": 1.337758474406881
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use)",
+   "queries": 2190,
    "recall 0.001": 0.06200913242009133,
    "recall 0.01": 0.08397260273972604,
-   "recall 0.01, periodo aggiunto": 0.12637362637362637,
-   "sbilanciamento": 1.1221232108298778
+   "recall 0.01, added period": 0.12637362637362637,
+   "imbalance": 1.1221232108298778
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids",
+   "queries": 2190,
    "recall 0.001": 0.2926027397260274,
    "recall 0.01": 0.4102739726027397,
-   "recall 0.01, periodo aggiunto": 0.5072802197802198,
-   "sbilanciamento": 1.1545309734707108
+   "recall 0.01, added period": 0.5072802197802198,
+   "imbalance": 1.1545309734707108
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "e-means di Faiss con massa iniziale e media mobile",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means with initial mass and moving average",
+   "queries": 2190,
    "recall 0.001": 0.09356164383561644,
    "recall 0.01": 0.12182648401826483,
-   "recall 0.01, periodo aggiunto": 0.175,
-   "sbilanciamento": 1.1117068733015845
+   "recall 0.01, added period": 0.175,
+   "imbalance": 1.1117068733015845
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "DeDrift-Lazy",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "DeDrift-Lazy",
+   "queries": 2190,
    "recall 0.001": 0.8850684931506849,
    "recall 0.01": 0.9902283105022832,
-   "recall 0.01, periodo aggiunto": 0.989423076923077,
-   "sbilanciamento": 1.3247370971958352
+   "recall 0.01, added period": 0.989423076923077,
+   "imbalance": 1.3247370971958352
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "DeDrift-Split",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "DeDrift-Split",
+   "queries": 2190,
    "recall 0.001": 0.8817351598173516,
    "recall 0.01": 0.989634703196347,
-   "recall 0.01, periodo aggiunto": 0.9884615384615385,
-   "sbilanciamento": 1.2016988317609778
+   "recall 0.01, added period": 0.9884615384615385,
+   "imbalance": 1.2016988317609778
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "DeDrift-Hybrid",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "DeDrift-Hybrid",
+   "queries": 2190,
    "recall 0.001": 0.886986301369863,
    "recall 0.01": 0.9901369863013698,
-   "recall 0.01, periodo aggiunto": 0.9902472527472528,
-   "sbilanciamento": 1.1972513790145767
+   "recall 0.01, added period": 0.9902472527472528,
+   "imbalance": 1.1972513790145767
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo) + liste ricostruite",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use) + lists rebuilt",
+   "queries": 2190,
    "recall 0.001": 0.6561643835616439,
    "recall 0.01": 0.9500456621004567,
-   "recall 0.01, periodo aggiunto": 0.9561813186813186,
-   "sbilanciamento": 4.181011507269534
+   "recall 0.01, added period": 0.9561813186813186,
+   "imbalance": 4.181011507269534
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi + liste ricostruite",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids + lists rebuilt",
+   "queries": 2190,
    "recall 0.001": 0.7247488584474886,
    "recall 0.01": 0.965296803652968,
-   "recall 0.01, periodo aggiunto": 0.9723901098901099,
-   "sbilanciamento": 2.7712910752738797
+   "recall 0.01, added period": 0.9723901098901099,
+   "imbalance": 2.7712910752738797
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "e-means di Faiss con massa iniziale e media mobile + liste ricostruite",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means with initial mass and moving average + lists rebuilt",
+   "queries": 2190,
    "recall 0.001": 0.7729680365296804,
    "recall 0.01": 0.9744292237442922,
-   "recall 0.01, periodo aggiunto": 0.9793956043956044,
-   "sbilanciamento": 1.7685787167290177
+   "recall 0.01, added period": 0.9793956043956044,
+   "imbalance": 1.7685787167290177
   },
   {
-   "giro": 5,
-   "testi": 1175000,
-   "strategia": "da zero su tutti i testi, e-means 3 epoche",
-   "interrogazioni": 2190,
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "from scratch on all texts, e-means 3 epochs",
+   "queries": 2190,
    "recall 0.001": 0.8896803652968037,
    "recall 0.01": 0.9913698630136987,
-   "recall 0.01, periodo aggiunto": 0.9913461538461539,
-   "sbilanciamento": 1.1631968916106836
+   "recall 0.01, added period": 0.9913461538461539,
+   "imbalance": 1.1631968916106836
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "mai aggiornare",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "never update",
+   "queries": 2932,
    "recall 0.001": 0.8699522510231924,
    "recall 0.01": 0.9894952251023191,
-   "recall 0.01, periodo aggiunto": 0.9877551020408163,
-   "sbilanciamento": 1.8193230324811656
+   "recall 0.01, added period": 0.9877551020408163,
+   "imbalance": 1.8193230324811656
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use)",
+   "queries": 2932,
    "recall 0.001": 0.049147339699863575,
    "recall 0.01": 0.06688267394270123,
-   "recall 0.01, periodo aggiunto": 0.0898639455782313,
-   "sbilanciamento": 1.0855534297906348
+   "recall 0.01, added period": 0.0898639455782313,
+   "imbalance": 1.0855534297906348
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids",
+   "queries": 2932,
    "recall 0.001": 0.17295361527967257,
    "recall 0.01": 0.24853342428376535,
-   "recall 0.01, periodo aggiunto": 0.31360544217687075,
-   "sbilanciamento": 1.1209255753789802
+   "recall 0.01, added period": 0.31360544217687075,
+   "imbalance": 1.1209255753789802
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "e-means di Faiss con massa iniziale e media mobile",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means with initial mass and moving average",
+   "queries": 2932,
    "recall 0.001": 0.06841746248294679,
    "recall 0.01": 0.09065484311050478,
-   "recall 0.01, periodo aggiunto": 0.1223809523809524,
-   "sbilanciamento": 1.071718896123205
+   "recall 0.01, added period": 0.1223809523809524,
+   "imbalance": 1.071718896123205
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "DeDrift-Lazy",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "DeDrift-Lazy",
+   "queries": 2932,
    "recall 0.001": 0.8823328785811733,
    "recall 0.01": 0.9908594815825376,
-   "recall 0.01, periodo aggiunto": 0.9895918367346939,
-   "sbilanciamento": 1.7161761880441206
+   "recall 0.01, added period": 0.9895918367346939,
+   "imbalance": 1.7161761880441206
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "DeDrift-Split",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "DeDrift-Split",
+   "queries": 2932,
    "recall 0.001": 0.8799795361527968,
    "recall 0.01": 0.9896316507503411,
-   "recall 0.01, periodo aggiunto": 0.9886394557823129,
-   "sbilanciamento": 1.2263342915396462
+   "recall 0.01, added period": 0.9886394557823129,
+   "imbalance": 1.2263342915396462
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "DeDrift-Hybrid",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "DeDrift-Hybrid",
+   "queries": 2932,
    "recall 0.001": 0.8883697135061391,
    "recall 0.01": 0.9903137789904501,
-   "recall 0.01, periodo aggiunto": 0.99,
-   "sbilanciamento": 1.2222353795862644
+   "recall 0.01, added period": 0.99,
+   "imbalance": 1.2222353795862644
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo) + liste ricostruite",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use) + lists rebuilt",
+   "queries": 2932,
    "recall 0.001": 0.6618008185538882,
    "recall 0.01": 0.953274215552524,
-   "recall 0.01, periodo aggiunto": 0.9585034013605442,
-   "sbilanciamento": 4.2739420651221645
+   "recall 0.01, added period": 0.9585034013605442,
+   "imbalance": 4.2739420651221645
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi + liste ricostruite",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids + lists rebuilt",
+   "queries": 2932,
    "recall 0.001": 0.7272169167803547,
    "recall 0.01": 0.9676330150068212,
-   "recall 0.01, periodo aggiunto": 0.9714285714285713,
-   "sbilanciamento": 3.0016243198401664
+   "recall 0.01, added period": 0.9714285714285713,
+   "imbalance": 3.0016243198401664
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "e-means di Faiss con massa iniziale e media mobile + liste ricostruite",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means with initial mass and moving average + lists rebuilt",
+   "queries": 2932,
    "recall 0.001": 0.7737039563437926,
    "recall 0.01": 0.9751364256480219,
-   "recall 0.01, periodo aggiunto": 0.9780272108843537,
-   "sbilanciamento": 1.7982237820670135
+   "recall 0.01, added period": 0.9780272108843537,
+   "imbalance": 1.7982237820670135
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "da zero su tutti i testi, e-means 3 epoche",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "from scratch on all texts, e-means 3 epochs",
+   "queries": 2932,
    "recall 0.001": 0.8988403819918144,
    "recall 0.01": 0.9911323328785813,
-   "recall 0.01, periodo aggiunto": 0.9925850340136055,
-   "sbilanciamento": 1.1472907695550467
+   "recall 0.01, added period": 0.9925850340136055,
+   "imbalance": 1.1472907695550467
   },
   {
-   "giro": 10,
-   "testi": 1550000,
-   "strategia": "da zero su tutti i testi, e-means 10 epoche (riferimento)",
-   "interrogazioni": 2932,
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "from scratch on all texts, e-means 10 epochs (reference)",
+   "queries": 2932,
    "recall 0.001": 0.9010914051841746,
    "recall 0.01": 0.9923260572987722,
-   "recall 0.01, periodo aggiunto": 0.9935374149659865,
-   "sbilanciamento": 1.155478336839126
+   "recall 0.01, added period": 0.9935374149659865,
+   "imbalance": 1.155478336839126
   }
  ],
- "tempi": {
-  "indice iniziale: addestramento, 5 epoche": 150.1052154580102,
-  "indice iniziale: assegnazione": 30.348729749995982,
-  "aggiornamento sui nuovi: mai aggiornare": [
+ "times": {
+  "initial index: training, 5 epochs": 150.1052154580102,
+  "initial index: assignment": 30.348729749995982,
+  "update on the new texts: never update": [
    5.839974619448185e-07,
    9.580107871443033e-07,
    8.33999365568161e-07,
@@ -356,7 +356,7 @@
    7.079943316057324e-07,
    7.089984137564898e-07
   ],
-  "aggiornamento sui nuovi: e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)": [
+  "update on the new texts: Faiss e-means on the new texts, from the old centroids (naive use)": [
    2.515754542007926,
    2.378098957997281,
    2.4358697080024285,
@@ -368,7 +368,7 @@
    2.458861084000091,
    2.4699552090023644
   ],
-  "aggiornamento sui nuovi: k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi": [
+  "update on the new texts: Faiss k-means on the new texts, one iteration from the old centroids": [
    2.886012832997949,
    2.9769301659980556,
    3.1421197910094634,
@@ -380,7 +380,7 @@
    3.2106830830016406,
    3.0736640830000397
   ],
-  "aggiornamento sui nuovi: e-means di Faiss con massa iniziale e media mobile": [
+  "update on the new texts: Faiss e-means with initial mass and moving average": [
    2.1796741250000196,
    2.0731297500024084,
    2.0763609999994515,
@@ -392,7 +392,7 @@
    2.076143291997141,
    2.1276375830057077
   ],
-  "aggiornamento dell'indice: DeDrift-Lazy": [
+  "index update: DeDrift-Lazy": [
    1.8531929589953506,
    2.0128762920066947,
    2.169502500008093,
@@ -404,7 +404,7 @@
    3.0609582909964956,
    3.1982061250018887
   ],
-  "aggiornamento dell'indice: DeDrift-Split": [
+  "index update: DeDrift-Split": [
    0.06707395800913218,
    0.07761591699090786,
    0.08920175000093877,
@@ -416,7 +416,7 @@
    0.1567973329947563,
    0.1776617499999702
   ],
-  "aggiornamento dell'indice: DeDrift-Hybrid": [
+  "index update: DeDrift-Hybrid": [
    1.841410958004417,
    1.9929915000102483,
    2.112237916997401,
@@ -428,7 +428,7 @@
    3.078034124991973,
    3.386771416000556
   ],
-  "riassegnazione di tutti i vettori": [
+  "reassignment of all vectors": [
    [
     875000,
     32.90292966700508
@@ -466,7 +466,7 @@
     58.97046524999314
    ]
   ],
-  "addestramento: da zero su tutti i testi, e-means 3 epoche": [
+  "training: from scratch on all texts, e-means 3 epochs": [
    [
     875000,
     100.26637466700049
@@ -480,7 +480,7 @@
     178.4101997079997
    ]
   ],
-  "addestramento: da zero su tutti i testi, e-means 10 epoche (riferimento)": [
+  "training: from scratch on all texts, e-means 10 epochs (reference)": [
    [
     1550000,
     594.1151062499994

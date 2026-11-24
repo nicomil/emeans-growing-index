@@ -1,7 +1,7 @@
 [project]
 name = "rag-emean"
 version = "0.1.0"
-description = "Studio sulla partenza a caldo di e-means"
+description = "Study of the warm start of e-means"
 requires-python = ">=3.11"
 dependencies = ["numpy", "matplotlib"]
 

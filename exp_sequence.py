@@ -1,31 +1,31 @@
-"""Passo D: aggiornamenti in sequenza.
+"""Step D: updates in sequence.
 
-Dieci aggiornamenti, uno dopo l'altro, ciascuno con 2.500 punti nuovi (il 5% dei
-dati iniziali): lo scenario del lavoro notturno. Ogni strategia riparte dai propri
-centroidi del giro precedente.
+Ten updates, one after the other, each with 2,500 new points (5% of the initial
+data): the nightly-job scenario. Every strategy restarts from its own centroids of
+the previous round.
 
-Due modi di misurare l'errore:
+Two ways of measuring the error:
 
-  liste:        ogni punto resta nella lista in cui è stato inserito, come in un
-                indice IVF che non rilegge i vettori già presenti. Se un centroide
-                si sposta, i punti della sua lista non lo seguono.
-  riassegnando: ogni punto è riassegnato al centroide più vicino. Richiede di
-                rileggere tutti i vettori dopo ogni aggiornamento.
+  lists:      every point stays in the list it was inserted into, as in an IVF
+              index that does not reread the vectors already present. If a centroid
+              moves, the points of its list do not follow it.
+  reassigned: every point is reassigned to the nearest centroid. Requires rereading
+              all the vectors after every update.
 
-Per le strategie che leggono solo i punti nuovi la misura realistica è la prima.
-I conteggi usati dalle strategie sono le dimensioni delle liste.
+For the strategies that read only the new points the realistic measure is the first.
+The counts used by the strategies are the list sizes.
 
-Controllo "colpo unico": lo stesso aggiornamento fatto una volta sola con tutti i
-25.000 punti nuovi. Se dà lo stesso errore dei dieci giri, l'errore cresce perché
-aumentano i punti spostati, non perché gli errori si sommano da un giro all'altro.
+"Single shot" control: the same update done only once with all 25,000 new points.
+If it gives the same error as the ten rounds, the error grows because the shifted
+points increase, not because the errors add up from one round to the next.
 
-Tre derive, con le stesse 40 componenti nella zona nuova:
-  nessuna:               i punti nuovi vengono dalla stessa distribuzione dei vecchi
-  zona nuova fissa:      tutti i punti nuovi vengono dalla stessa zona, spostata di 1,5
-  zona che si allontana: la stessa zona, spostata di 0,15 in più a ogni giro
+Three drifts, with the same 40 components in the new zone:
+  none:             the new points come from the same distribution as the old ones
+  fixed new zone:   all the new points come from the same zone, shifted by 1.5
+  zone moving away: the same zone, shifted by a further 0.15 at every round
 
-Uso: uv run exp_sequence.py > results/exp_sequence.md
-     (prima va eseguito exp_rule.py sovrapposti, che scrive i parametri della regola)
+Usage: uv run exp_sequence.py > results/exp_sequence.md
+       (run exp_rule.py overlapping first: it writes the parameters of the rule)
 """
 
 import json
@@ -41,26 +41,26 @@ from exp_warm import D, K, N_OLD, assign_all, mixture
 ROUNDS, CHUNK = 10, 2_500
 REPORT = (1, 5, 10)
 assert REPORT[-1] == ROUNDS
-SEEDS = range(10, 15)  # insiemi di dati mai usati nei passi precedenti
-DRIFTS = ("nessuna", "zona nuova fissa", "zona che si allontana")
-QUOTA_RULE = json.loads(FIT_FILE.read_text())["dalla quota"]
-REREADS = "a caldo su tutti i dati, 1 epoca"
+SEEDS = range(10, 15)  # datasets never used in the previous steps
+DRIFTS = ("none", "fixed new zone", "zone moving away")
+SHARE_RULE = json.loads(FIT_FILE.read_text())["from the share"]
+REREADS = "warm start on all data, 1 epoch"
 
 
 def make(rng, drift):
-    """Dati iniziali e i punti nuovi di ogni giro, di forma (ROUNDS, CHUNK, D)."""
+    """Initial data and the new points of every round, of shape (ROUNDS, CHUNK, D)."""
     same = mixture(rng, N_OLD + ROUNDS * CHUNK, 200, 0.0)
-    if drift == "nessuna":
+    if drift == "none":
         return same[:N_OLD], same[N_OLD:].reshape(ROUNDS, CHUNK, D)
     means = rng.normal(0, 0.7, (40, D))
     new = means[rng.integers(0, 40, (ROUNDS, CHUNK))] + rng.normal(0, 1, (ROUNDS, CHUNK, D))
-    shift = np.full(ROUNDS, 1.5) if drift == "zona nuova fissa" else 1.5 * np.arange(1, ROUNDS + 1) / ROUNDS
+    shift = np.full(ROUNDS, 1.5) if drift == "fixed new zone" else 1.5 * np.arange(1, ROUNDS + 1) / ROUNDS
     new[:, :, :8] += shift[:, None, None]
     return same[:N_OLD], new
 
 
 def mass_arm(mass):
-    """e-means sui soli punti nuovi con massa m × passo × dimensione della lista."""
+    """e-means on the new points only with mass m × step × list size."""
     def update(centroids, counts, added, seen, seed):
         m = mass(len(added) / len(seen)) if callable(mass) else mass
         return warm(added, centroids, counts, m, seed)
@@ -68,14 +68,14 @@ def mass_arm(mass):
 
 
 STRATEGIES = {
-    "centroidi iniziali, mai aggiornati": lambda c, counts, added, seen, seed: c,
-    "e-means, massa quasi nulla e finalizzazione": lambda c, counts, added, seen, seed: emeans(
+    "initial centroids, never updated": lambda c, counts, added, seen, seed: c,
+    "e-means, near-zero mass and finalization": lambda c, counts, added, seen, seed: emeans(
         added, K, epochs=1, seed=seed, init=c),
-    "mini-batch k-means dalle dimensioni delle liste": lambda c, counts, added, seen, seed: online_mean(
+    "mini-batch k-means from the list sizes": lambda c, counts, added, seen, seed: online_mean(
         added, c, counts, batch_law(len(added), K, 1, D), seed),
-    "e-means, massa 1": mass_arm(1.0),
-    "e-means, massa dalla quota": mass_arm(lambda f: predict(QUOTA_RULE, 1.0, f)),
-    "e-means, massa 0,2": mass_arm(0.2),
+    "e-means, mass 1": mass_arm(1.0),
+    "e-means, mass from the share": mass_arm(lambda f: predict(SHARE_RULE, 1.0, f)),
+    "e-means, mass 0.2": mass_arm(0.2),
     REREADS: lambda c, counts, added, seen, seed: emeans(seen, K, epochs=1, seed=seed, init=c),
 }
 
@@ -85,10 +85,10 @@ def list_mse(x, centroids, labels):
 
 
 def step(name, centroids, labels, added, seen, seed):
-    """Un aggiornamento: centroidi nuovi e lista di ogni punto visto finora."""
+    """One update: new centroids and the list of every point seen so far."""
     counts = np.bincount(labels, minlength=K).astype(np.float64)
     centroids = STRATEGIES[name](centroids, counts, added, seen, seed)
-    if name == REREADS:  # rilegge tutto, quindi può riassegnare tutto
+    if name == REREADS:  # it rereads everything, so it can reassign everything
         return centroids, assign_all(seen, centroids)[0]
     return centroids, np.concatenate([labels, assign_all(added, centroids)[0]])
 
@@ -100,22 +100,22 @@ def run(drift, seed):
     start_mse = mse(old, start)
     state = {name: (start, start_labels) for name in STRATEGIES}
     seen = old
-    out = {name: {"liste": [], "riassegnando": []} for name in STRATEGIES}
+    out = {name: {"lists": [], "reassigned": []} for name in STRATEGIES}
     for r in range(1, ROUNDS + 1):
         added = new[r - 1]
         seen = np.vstack([seen, added])
         reference = mse(seen, emeans(seen, K, epochs=10, seed=1000 * seed + r))
         for name in STRATEGIES:
             centroids, labels = state[name] = step(name, *state[name], added, seen, 1000 * seed + r)
-            out[name]["liste"].append(100 * (list_mse(seen, centroids, labels) / reference - 1))
-            out[name]["riassegnando"].append(100 * (mse(seen, centroids) / reference - 1))
+            out[name]["lists"].append(100 * (list_mse(seen, centroids, labels) / reference - 1))
+            out[name]["reassigned"].append(100 * (mse(seen, centroids) / reference - 1))
     for name in STRATEGIES:
         centroids, labels = state[name]
-        # quanto è peggiorato l'errore dei punti iniziali, nelle loro liste, rispetto all'inizio
-        out[name]["punti iniziali"] = 100 * (list_mse(old, centroids, labels[:N_OLD]) / start_mse - 1)
+        # how much the error of the initial points, in their lists, has worsened since the start
+        out[name]["initial points"] = 100 * (list_mse(old, centroids, labels[:N_OLD]) / start_mse - 1)
         centroids, labels = step(name, start, start_labels, new.reshape(-1, D), seen, 1000 * seed)
-        out[name]["colpo unico, liste"] = 100 * (list_mse(seen, centroids, labels) / reference - 1)
-        out[name]["colpo unico, riassegnando"] = 100 * (mse(seen, centroids) / reference - 1)
+        out[name]["single shot, lists"] = 100 * (list_mse(seen, centroids, labels) / reference - 1)
+        out[name]["single shot, reassigned"] = 100 * (mse(seen, centroids) / reference - 1)
     return out
 
 
@@ -126,29 +126,29 @@ def cell(values, spread=False):
 
 if __name__ == "__main__":
     raw = {}
-    print(f"{ROUNDS} giri da {CHUNK} punti nuovi su {N_OLD} iniziali; {len(SEEDS)} insiemi di dati.\n")
+    print(f"{ROUNDS} rounds of {CHUNK} new points on {N_OLD} initial ones; {len(SEEDS)} datasets.\n")
     print(
-        "Errore in eccesso rispetto a e-means da zero su tutti i dati, 10 epoche, rifatto a ogni giro. Mediana; "
-        "dove indicato anche [minimo; massimo]. Il riferimento vede i punti nuovi mentre si addestra: una parte "
-        "dell'eccesso dei centroidi mai aggiornati è questo, non degrado."
+        "Excess error relative to e-means from scratch on all data, 10 epochs, redone at every round. Median; "
+        "where indicated also [minimum; maximum]. The reference sees the new points while it trains: part "
+        "of the excess of the never-updated centroids is this, not degradation."
     )
     print(
-        f"Letture in {ROUNDS} giri: {ROUNDS * CHUNK} punti per le strategie sui soli nuovi, "
-        f"{sum(N_OLD + r * CHUNK for r in range(1, ROUNDS + 1))} per quella che rilegge tutto."
+        f"Reads in {ROUNDS} rounds: {ROUNDS * CHUNK} points for the strategies on the new points only, "
+        f"{sum(N_OLD + r * CHUNK for r in range(1, ROUNDS + 1))} for the one that rereads everything."
     )
     for drift in DRIFTS:
         runs = raw[drift] = [run(drift, seed) for seed in SEEDS]
-        print(f"\n### Deriva: {drift}\n")
+        print(f"\n### Drift: {drift}\n")
         print(
-            "| Strategia | Liste, dopo 1 giro | dopo 5 | dopo 10 | Liste, colpo unico | Riassegnando, dopo 10 | "
-            "Riassegnando, colpo unico | Punti iniziali nelle loro liste, dopo 10 |"
+            "| Strategy | Lists, after 1 round | after 5 | after 10 | Lists, single shot | Reassigned, after 10 | "
+            "Reassigned, single shot | Initial points in their lists, after 10 |"
         )
         print("|---|" + "---|" * 7)
         for name in STRATEGIES:
             get = lambda key, r=None: [run_[name][key] if r is None else run_[name][key][r - 1] for run_ in runs]
             print(
-                f"| {name} | {cell(get('liste', 1))} | {cell(get('liste', 5))} | {cell(get('liste', 10), True)} | "
-                f"{cell(get('colpo unico, liste'))} | {cell(get('riassegnando', 10), True)} | "
-                f"{cell(get('colpo unico, riassegnando'))} | {cell(get('punti iniziali'))} |"
+                f"| {name} | {cell(get('lists', 1))} | {cell(get('lists', 5))} | {cell(get('lists', 10), True)} | "
+                f"{cell(get('single shot, lists'))} | {cell(get('reassigned', 10), True)} | "
+                f"{cell(get('single shot, reassigned'))} | {cell(get('initial points'))} |"
             )
-    Path("results/exp_sequence.json").write_text(json.dumps({"seed": list(SEEDS), "giri": ROUNDS, "esecuzioni": raw}))
+    Path("results/exp_sequence.json").write_text(json.dumps({"seed": list(SEEDS), "rounds": ROUNDS, "runs": raw}))

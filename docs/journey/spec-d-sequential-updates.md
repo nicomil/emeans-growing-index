@@ -24,7 +24,7 @@ context:
 
 **Code**
 
-- `exp_sequence.py`: `uv run exp_sequence.py > results/exp_sequence.md`, about five minutes. Requires the parameters written by `exp_rule.py sovrapposti` (`sovrapposti` = overlapping). All the rounds and all the datasets are in `results/exp_sequence.json`.
+- `exp_sequence.py`: `uv run exp_sequence.py > results/exp_sequence.md`, about five minutes. Requires the parameters written by `exp_rule.py overlapping` . All the rounds and all the datasets are in `results/exp_sequence.json`.
 
 **Design**
 

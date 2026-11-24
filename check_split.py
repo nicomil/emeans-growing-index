@@ -1,11 +1,11 @@
-"""Quanto pesano sul risultato le due scelte che il paper di DeDrift non fissa.
+"""How much the two choices the DeDrift paper leaves open weigh on the result.
 
-Split raggruppa di nuovo alcune liste con k-means, ma il paper non dice per quante iterazioni
-né da dove parte. exp_scale.py usa 10 iterazioni da punti a caso. Qui la stessa corsa è ripetuta
-con 5 e 25 iterazioni e con 10 iterazioni a partire dai centroidi vecchi delle liste coinvolte,
-per Split e per Hybrid. Tutto il resto è exp_scale.py.
+Split clusters some lists again with k-means, but the paper does not say for how many iterations
+nor where it starts from. exp_scale.py uses 10 iterations from random points. Here the same run is
+repeated with 5 and 25 iterations and with 10 iterations starting from the old centroids of the
+lists involved, for Split and for Hybrid. Everything else is exp_scale.py.
 
-Uso: uv run check_split.py arxiv-full [seed] [large|small] > results/check_split_arxiv-full.md
+Usage: uv run check_split.py arxiv-full [seed] [large|small] > results/check_split_arxiv-full.md
 """
 
 import sys
@@ -14,10 +14,10 @@ import exp_scale
 from exp_scale import STALE, lazy, split
 
 VARIANTS = {
-    "10 iterazioni da punti a caso (come in exp_scale.py)": (10, False),
-    "5 iterazioni da punti a caso": (5, False),
-    "25 iterazioni da punti a caso": (25, False),
-    "10 iterazioni dai centroidi vecchi": (10, True),
+    "10 iterations from random points (as in exp_scale.py)": (10, False),
+    "5 iterations from random points": (5, False),
+    "25 iterations from random points": (25, False),
+    "10 iterations from the old centroids": (10, True),
 }
 
 if __name__ == "__main__":
@@ -33,9 +33,9 @@ if __name__ == "__main__":
     rounds = exp_scale.SCALES[scale][1]
     exp_scale.REPORT = (rounds,)
     rows, _, _, (n0, rounds, chunk, k, d) = exp_scale.run(corpus, seed, scale)
-    print(f"Insieme di dati: {corpus}, seed {seed}. {n0} testi iniziali, {rounds} giri da {chunk}, {k} centroidi.")
-    print(f"Recall@10 dopo {rounds} giri; un solo seed, senza intervalli.\n")
-    print("| Strategia | 1% letto | 0,1% letto | Sbilanciamento |")
+    print(f"Dataset: {corpus}, seed {seed}. {n0} initial texts, {rounds} rounds of {chunk}, {k} centroids.")
+    print(f"Recall@10 after {rounds} rounds; a single seed, no intervals.\n")
+    print("| Strategy | 1% read | 0.1% read | Imbalance |")
     print("|---|---|---|---|")
     for row in rows:
-        print(f"| {row['strategia']} | {row['recall 0.01']:.3f} | {row['recall 0.001']:.3f} | {row['sbilanciamento']:.2f} |")
+        print(f"| {row['strategy']} | {row['recall 0.01']:.3f} | {row['recall 0.001']:.3f} | {row['imbalance']:.2f} |")

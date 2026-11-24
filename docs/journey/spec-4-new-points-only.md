@@ -24,7 +24,7 @@ context:
 
 **Code**
 
-- `exp_new_only.py`: the experiment. `uv run exp_new_only.py sovrapposti` (overlapping), `netti` (well-separated) or `senza-deriva` (no drift), three to four minutes each. Raw numbers in `results/exp_new_only_<type>.json`, full tables in `results/exp_new_only_<type>.md`.
+- `exp_new_only.py`: the experiment. `uv run exp_new_only.py overlapping`, `separated` or `no-drift`, three to four minutes each. Raw numbers in `results/exp_new_only_<type>.json`, full tables in `results/exp_new_only_<type>.md`.
 - `exp_warm.py`: `mixture` has one more parameter, the spread of the means.
 - `test_emeans.py`: one new test on the link between e-means and classic mini-batch k-means.
 - `emeans.py` has not changed.

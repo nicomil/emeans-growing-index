@@ -1,25 +1,25 @@
-"""Passo 4: aggiornare i centroidi leggendo solo i punti nuovi.
+"""Step 4: updating the centroids by reading only the new points.
 
-Scenario. I dati vecchi sono già raggruppati e non si vogliono rileggere. Arrivano
-punti nuovi, una frazione f del totale. Si aggiornano i centroidi leggendo solo i
-punti nuovi e si misura l'errore su tutti i dati. Dei dati vecchi si suppongono
-noti solo i centroidi e quanti punti ha ogni cluster, come in un indice IVF.
+Scenario. The old data are already clustered and we do not want to read them again.
+New points arrive, a fraction f of the total. The centroids are updated by reading
+only the new points and the error is measured on all the data. Of the old data only
+the centroids and how many points each cluster has are assumed known, as in an IVF index.
 
-Le manopole di e-means:
+The knobs of e-means:
 
-  massa m:  massa iniziale = m × passo iniziale × numero di punti vecchi del cluster.
-            A passo costante e molto piccolo, m = 1 dà la media incrementale in cui
-            un punto vecchio pesa quanto uno nuovo (verificato in test_emeans.py).
-            Con il passo a coseno di e-means i punti nuovi pesano da 1 a 0,1 volte
-            un punto vecchio lungo la passata, in media 0,55: m = 1 trattiene il
-            passato circa 1,8 volte più di quella media.
-  passo s:  passo iniziale = s × quello della legge di scala calcolata sui punti nuovi.
-  soglia tau: rianimazione dei cluster "morti". La massa di tutti i cluster viene
-            scontata a ogni passo, anche di quelli che non ricevono punti: un cluster
-            vecchio senza punti nuovi finisce sotto soglia e viene riciclato, benché
-            i suoi punti vecchi esistano ancora. 0 la spegne.
+  mass m:   initial mass = m × initial step × number of old points in the cluster.
+            With a constant and very small step, m = 1 gives the incremental mean in
+            which an old point weighs as much as a new one (verified in test_emeans.py).
+            With the cosine step of e-means the new points weigh from 1 to 0.1 times
+            an old point along the pass, 0.55 on average: m = 1 holds on to the past
+            about 1.8 times more than that average.
+  step s:   initial step = s × that of the scaling law computed on the new points.
+  threshold tau: revival of "dead" clusters. The mass of all clusters is discounted
+            at every step, including those that receive no points: an old cluster with
+            no new points falls below the threshold and is recycled, even though its
+            old points still exist. 0 turns it off.
 
-Uso: uv run exp_new_only.py [sovrapposti|netti|senza-deriva]
+Usage: uv run exp_new_only.py [overlapping|separated|no-drift]
 """
 
 import json
@@ -36,25 +36,25 @@ DATA_SEEDS, ALGO_SEEDS = 5, 2
 MASSES = (0.03, 0.1, 0.3, 1, 3)
 STEPS = (1 / 64, 1 / 16, 1 / 4, 1)
 TAUS = (0.1, 0.0)
-# Una sola configurazione per tutte le colonne e tutti i tipi di dati. Scelta al centro
-# della griglia dopo la prima esecuzione, non ritoccata per colonna.
+# A single configuration for all columns and all kinds of data. Chosen at the centre
+# of the grid after the first run, not retouched per column.
 FIXED = dict(m=0.3, s=1 / 4, tau=0.0)
-# (dispersione delle medie, spostamento dei punti nuovi). "netti": gruppi separati,
-# regime in cui il risultato dipende da quanti gruppi restano senza centroide.
-# "senza-deriva": i punti nuovi vengono dalla stessa miscela dei vecchi.
-CONFIGS = {"sovrapposti": (0.7, 1.5), "netti": (2.0, 3.0), "senza-deriva": (0.7, None)}
-STALE = "centroidi vecchi, nessun ricalcolo"
-NAIVE = "e-means, massa quasi nulla e finalizzazione"
-FROZEN = "Lloyd sui nuovi con statistiche vecchie congelate"
-ONLINE = "mini-batch k-means con conteggi veri"
-EMEANS = "e-means, configurazione fissa (m 0,3; s 1/4; senza rianimazione)"
-REFERENCE = "da zero su tutti i dati, 10 epoche (riferimento)"
+# (spread of the means, shift of the new points). "separated": well-separated groups,
+# a regime in which the result depends on how many groups are left without a centroid.
+# "no-drift": the new points come from the same mixture as the old ones.
+CONFIGS = {"overlapping": (0.7, 1.5), "separated": (2.0, 3.0), "no-drift": (0.7, None)}
+STALE = "old centroids, no recomputation"
+NAIVE = "e-means, near-zero mass and finalization"
+FROZEN = "Lloyd on the new points with frozen old statistics"
+ONLINE = "mini-batch k-means with true counts"
+EMEANS = "e-means, fixed configuration (m 0.3; s 1/4; no revival)"
+REFERENCE = "from scratch on all data, 10 epochs (reference)"
 
 
 def frozen_lloyd(added, centroids, old_counts, passes):
-    """Lloyd sui punti nuovi; i punti vecchi entrano come centroide vecchio × conteggio.
+    """Lloyd on the new points; the old points enter as old centroid × count.
 
-    Con una passata è la media incrementale con i centroidi fermi durante l'assegnazione.
+    With one pass it is the incremental mean with the centroids held still during assignment.
     """
     current = centroids
     for _ in range(passes):
@@ -68,9 +68,9 @@ def frozen_lloyd(added, centroids, old_counts, passes):
 
 
 def online_mean(added, centroids, old_counts, batch, seed):
-    """Mini-batch k-means classico (MacQueen, Sculley) che parte dai conteggi veri.
+    """Classic mini-batch k-means (MacQueen, Sculley) starting from the true counts.
 
-    Stessi batch e stesso ordine di emeans con lo stesso seed.
+    Same batches and same order as emeans with the same seed.
     """
     current, counts = centroids.copy(), old_counts.copy()
     order = np.random.default_rng(seed).permutation(len(added))
@@ -115,7 +115,7 @@ def run(config, fraction, data_seed, algo_seed):
         )
 
     batch = batch_law(n_added, K, 1, D)
-    # Chiave: (nome, costo in letture come multiplo di f; None = legge tutti i dati)
+    # Key: (name, cost in reads as a multiple of f; None = reads all the data)
     arms = {
         (STALE, 0): old_centroids,
         (NAIVE, 1): emeans(added, K, epochs=1, seed=algo_seed, init=old_centroids),
@@ -124,14 +124,14 @@ def run(config, fraction, data_seed, algo_seed):
         (EMEANS, 1): new_only(**FIXED),
         (FROZEN, 3): frozen_lloyd(added, old_centroids, old_counts, 3),
         (EMEANS, 3): new_only(**FIXED, epochs=3),
-        ("a caldo su tutti i dati, 1 epoca", None): emeans(x, K, epochs=1, seed=algo_seed, init=old_centroids),
-        ("da zero su tutti i dati, 1 epoca", None): emeans(x, K, epochs=1, seed=algo_seed),
+        ("warm start on all data, 1 epoch", None): emeans(x, K, epochs=1, seed=algo_seed, init=old_centroids),
+        ("from scratch on all data, 1 epoch", None): emeans(x, K, epochs=1, seed=algo_seed),
         (REFERENCE, None): emeans(x, K, epochs=10, seed=algo_seed),
     }
     for tau in TAUS:
         for m in MASSES:
             for s in STEPS:
-                arms[(f"griglia tau={tau} m={m} s={s}", 1)] = new_only(m, s, tau)
+                arms[(f"grid tau={tau} m={m} s={s}", 1)] = new_only(m, s, tau)
     return {key: split_mse(x, N_OLD, c) for key, c in arms.items()}, (n_added, batch, step_law(n_added, K, 1, batch))
 
 
@@ -140,43 +140,43 @@ def cell(values):
 
 
 if __name__ == "__main__":
-    config = sys.argv[1] if len(sys.argv) > 1 else "sovrapposti"
+    config = sys.argv[1] if len(sys.argv) > 1 else "overlapping"
     raw = {}
-    print(f"## Dati {config}\n")
+    print(f"## Data: {config}\n")
     print(
-        f"{DATA_SEEDS} insiemi di dati × {ALGO_SEEDS} seed dell'algoritmo. Le {DATA_SEEDS * ALGO_SEEDS} esecuzioni non sono "
-        "indipendenti: centroidi vecchi e strategie senza casualità cambiano solo con l'insieme di dati.\n"
+        f"{DATA_SEEDS} datasets × {ALGO_SEEDS} algorithm seeds. The {DATA_SEEDS * ALGO_SEEDS} runs are not "
+        "independent: old centroids and strategies without randomness change only with the dataset.\n"
     )
-    print("Errore in eccesso rispetto al riferimento della stessa esecuzione: mediana [minimo; massimo].")
+    print("Excess error relative to the reference of the same run: median [minimum; maximum].")
     for fraction in FRACTIONS:
         runs = [run(config, fraction, d, 100 + a) for d in range(DATA_SEEDS) for a in range(ALGO_SEEDS)]
         n_new, batch, step = runs[0][1]
         raw[str(fraction)] = [{f"{name} | {cost}": v for (name, cost), v in r[0].items()} for r in runs]
-        # eccesso[chiave] ha forma (esecuzioni, 3): totale, punti vecchi, punti nuovi
+        # excess[key] has shape (runs, 3): total, old points, new points
         excess = {
             key: np.array([[100 * (r[0][key][i] / r[0][(REFERENCE, None)][i] - 1) for i in range(3)] for r in runs])
             for key in runs[0][0]
         }
-        print(f"\n### {fraction:.0%} di punti nuovi ({n_new} punti, batch {batch}, passo della legge {step:.3f})\n")
-        print("| Strategia | Letture | Tutti i dati | Solo punti vecchi | Solo punti nuovi |")
+        print(f"\n### {fraction:.0%} new points ({n_new} points, batch {batch}, step of the law {step:.3f})\n")
+        print("| Strategy | Reads | All data | Old points only | New points only |")
         print("|---|---|---|---|---|")
         for (name, cost), e in excess.items():
-            if not name.startswith("griglia") and name != REFERENCE:
-                reads = "tutti i dati" if cost is None else f"{cost * fraction:.2f} × n"
+            if not name.startswith("grid") and name != REFERENCE:
+                reads = "all data" if cost is None else f"{cost * fraction:.2f} × n"
                 print(f"| {name} | {reads} | {cell(e[:, 0])} | {np.median(e[:, 1]):+.2f}% | {np.median(e[:, 2]):+.2f}% |")
         print(
-            f"\nGriglia di e-means, una passata sui punti nuovi, senza finalizzazione. Eccesso mediano su tutti i dati; "
-            f"tra parentesi in quante esecuzioni su {len(runs)} batte il mini-batch k-means con conteggi veri."
+            f"\nGrid of e-means, one pass over the new points, without finalization. Median excess on all data; "
+            f"in parentheses, in how many runs out of {len(runs)} it beats mini-batch k-means with true counts."
         )
         online = excess[(ONLINE, 1)][:, 0]
         for tau in TAUS:
-            print(f"\nRianimazione {'spenta' if tau == 0 else f'con soglia {tau}'}:\n")
-            print("| massa m | " + " | ".join(f"passo ×1/{round(1 / s)}" for s in STEPS) + " |")
+            print(f"\nRevival {'off' if tau == 0 else f'with threshold {tau}'}:\n")
+            print("| mass m | " + " | ".join(f"step ×1/{round(1 / s)}" for s in STEPS) + " |")
             print("|---|" + "---|" * len(STEPS))
             for m in MASSES:
                 cells = []
                 for s in STEPS:
-                    e = excess[(f"griglia tau={tau} m={m} s={s}", 1)][:, 0]
+                    e = excess[(f"grid tau={tau} m={m} s={s}", 1)][:, 0]
                     cells.append(f"{np.median(e):+.2f}% ({int((e < online).sum())})")
                 print(f"| {m:g} | " + " | ".join(cells) + " |")
     Path("results").mkdir(exist_ok=True)

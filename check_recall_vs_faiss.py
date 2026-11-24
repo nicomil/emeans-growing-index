@@ -1,10 +1,10 @@
-"""Controllo della misura: il nostro recall coincide con quello di un indice IVF di Faiss?
+"""Check of the measure: does our recall match that of a Faiss IVF index?
 
-Il recall degli esperimenti è calcolato da una funzione scritta a mano (exp_real.recall).
-Qui si costruisce un vero IndexIVFFlat di Faiss con gli stessi centroidi, vi si
-inseriscono gli stessi vettori e si confronta il recall a parità di liste sondate.
+The recall of the experiments is computed by a hand-written function (exp_real.recall).
+Here a real Faiss IndexIVFFlat is built with the same centroids, the same vectors are
+inserted into it and the recall is compared at an equal number of probed lists.
 
-Uso: uv run check_recall_vs_faiss.py news > results/check_recall_news.md
+Usage: uv run check_recall_vs_faiss.py news > results/check_recall_news.md
 """
 
 import sys
@@ -29,12 +29,12 @@ if __name__ == "__main__":
     quantizer = faiss.IndexFlatL2(d)
     quantizer.add(np.ascontiguousarray(centroids, dtype=np.float32))
     index = faiss.IndexIVFFlat(quantizer, d, K)
-    index.train(np.ascontiguousarray(docs))  # il quantizzatore ha già i centroidi: non li ricalcola
+    index.train(np.ascontiguousarray(docs))  # the quantizer already holds the centroids: it does not recompute them
     index.add(np.ascontiguousarray(docs))
     assert quantizer.ntotal == K
 
-    print(f"Insieme di dati: {corpus}. {len(docs)} vettori, {K} liste, {len(held)} interrogazioni. Recall@{TOP}.\n")
-    print("| Liste sondate | Recall con IndexIVFFlat di Faiss | Recall con la nostra funzione | Differenza |")
+    print(f"Dataset: {corpus}. {len(docs)} vectors, {K} lists, {len(held)} queries. Recall@{TOP}.\n")
+    print("| Lists probed | Recall with Faiss IndexIVFFlat | Recall with our function | Difference |")
     print("|---|---|---|---|")
     worst = 0.0
     for nprobe in (1, 4, 16, 64):
@@ -45,5 +45,5 @@ if __name__ == "__main__":
         ours = float(recall(docs, labels, centroids, held, threshold, nprobe=nprobe)[0].mean()) / TOP
         worst = max(worst, abs(theirs - ours))
         print(f"| {nprobe} | {theirs:.4f} | {ours:.4f} | {ours - theirs:+.4f} |")
-    print(f"\nScarto massimo: {worst:.4f}.")
-    assert worst < 0.002, "il nostro recall non coincide con quello di Faiss"
+    print(f"\nMaximum gap: {worst:.4f}.")
+    assert worst < 0.002, "our recall does not match that of Faiss"

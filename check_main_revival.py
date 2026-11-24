@@ -1,10 +1,10 @@
-"""Su Faiss main: quanto dell'effetto dipende dalla rianimazione dei cluster.
+"""On Faiss main: how much of the effect depends on cluster revival.
 
-L'aggiornamento ingenuo e quello corretto (massa iniziale, lettura della media mobile),
-con le tre impostazioni di unused_threshold: None (predefinita su main: costo di rimozione),
-0.1 (per massa, come in Faiss 1.16.0), 0 (nessuna rianimazione).
+The naive refresh and the fixed one (initial mass, read-out of the moving average),
+with the three settings of unused_threshold: None (default on main: removal cost),
+0.1 (by mass, as in Faiss 1.16.0), 0 (no revival).
 
-Uso, con un Python che ha Faiss main: python check_main_revival.py news
+Usage, with a Python that has Faiss main: python check_main_revival.py news
 """
 import sys
 
@@ -52,9 +52,9 @@ if __name__ == "__main__":
             centroids = globals()[name](tau, start, counts, added, 1000 * seed)
             found = recall(docs[:n], assign_all(docs64[:n], centroids)[0], centroids, queries[usable], threshold)
             values.append(float(found[len(BUDGETS) - 1].mean()) / TOP)
-    print(f"Insieme di dati: {corpus}. Un aggiornamento da {SIZE} testi, liste ricostruite.")
-    print(f"Recall@{TOP} leggendo l'1% dell'indice, mediana [min; max] su {len(SEEDS)} seed.\n")
-    print("| unused_threshold | Uso ingenuo | Con massa iniziale e media mobile |")
+    print(f"Dataset: {corpus}. One update of {SIZE} texts, lists rebuilt.")
+    print(f"Recall@{TOP} reading 1% of the index, median [min; max] over {len(SEEDS)} seeds.\n")
+    print("| unused_threshold | Naive use | With initial mass and moving average |")
     print("|---|---|---|")
     cell = lambda v: f"{np.median(v):.3f} [{min(v):.3f}; {max(v):.3f}]"
     for tau in THRESHOLDS:
