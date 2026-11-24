@@ -2,7 +2,7 @@
 
 Studio indipendente di [e-means](https://arxiv.org/abs/2611.09501), la variante di k-means pubblicata da Meta FAIR nel novembre 2026 e distribuita in Faiss 1.16.0, in una situazione che il paper non tratta: un indice vettoriale a cluster (IVF) che riceve documenti nuovi nel tempo.
 
-Il brief del progetto è in `_bmad-output/planning-artifacts/briefs/`, i risultati in `results/SINTESI.md`, il percorso passo per passo, con le revisioni, in `_bmad-output/implementation-artifacts/`.
+I risultati sono in `results/SINTESI.md`, il rapporto in `docs/RAPPORTO.md`. Il brief del progetto (`brief.md`) e il percorso passo per passo, con le revisioni, sono in `docs/percorso/`.
 
 ## Cosa c'è
 
@@ -96,3 +96,7 @@ Le revisioni di dataset e modelli non sono fissate: scaricandoli in futuro i num
 - Le interrogazioni sono testi del corpus tenuti fuori dall'indice; domande vere di utenti solo su MS MARCO, che però non ha date e quindi non ha deriva.
 - DeDrift è riscritto dal testo del paper, perché non risulta codice pubblicato; Ada-IVF e SPFresh non sono stati provati.
 - Faiss 1.16.0. Il ramo principale di Faiss ha poi cambiato la rianimazione dei cluster: lì sono stati rifatti l'aggiornamento singolo e una corsa a scala grande (`results/*_main.md`, `results/check_main_revival_*.md`), con Faiss compilato dai sorgenti al commit 16a95d6.
+
+## Licenza
+
+Codice e testi sotto licenza MIT (`LICENSE`). Dataset e modelli hanno le licenze dei rispettivi autori.

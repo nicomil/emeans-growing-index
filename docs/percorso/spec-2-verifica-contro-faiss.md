@@ -6,7 +6,7 @@ status: 'done'
 route: 'oneshot'
 review_loop_iteration: 0
 context:
-  - '{project-root}/_bmad-output/implementation-artifacts/spec-1-emeans-numpy-2d.md'
+  - '{project-root}/docs/percorso/spec-1-emeans-numpy-2d.md'
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

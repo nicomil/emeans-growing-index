@@ -3,8 +3,13 @@ __pycache__/
 .pytest_cache/
 # generato da demo_2d.py
 emeans_2d.gif
-# impostazioni personali di BMAD
-_bmad/config.user.toml
+# strumenti di lavoro (BMAD, Claude), non parte dello studio
+_bmad/
+_bmad-output/
+.claude/
+.DS_Store
+# bozze non pubblicate
+docs/*-bozza.md
 # dati scaricati e embedding, rigenerabili con embed_corpus.py
 data/
 # sorgenti di terzi scaricati per sola lettura (Faiss main)

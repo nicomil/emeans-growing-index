@@ -6,8 +6,8 @@ status: 'done'
 route: 'oneshot'
 review_loop_iteration: 0
 context:
-  - '{project-root}/_bmad-output/implementation-artifacts/spec-4-solo-punti-nuovi.md'
-  - '{project-root}/_bmad-output/implementation-artifacts/spec-4b-regola-della-massa.md'
+  - '{project-root}/docs/percorso/spec-4-solo-punti-nuovi.md'
+  - '{project-root}/docs/percorso/spec-4b-regola-della-massa.md'
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">

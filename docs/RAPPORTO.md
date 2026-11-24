@@ -9,8 +9,6 @@ I risultati reggono su quattro insiemi di dati (due corpus per due modelli di em
 | Cosa | Dove |
 |---|---|
 | Risultati con intervalli di confidenza | `results/SINTESI.md` |
-| Bozza del post LinkedIn, con la fonte di ogni numero | `docs/linkedin-post-bozza.md` |
-| Bozza della segnalazione per Faiss, in inglese | `docs/faiss-issue-bozza.md` |
 | Riproduzione minima da allegare alla segnalazione | `docs/repro_emeans_init_centroids.py` |
 | Come rifare tutto | `README.md` |
 | Registro dei lavori notturni | `data/night.log` |
@@ -24,7 +22,7 @@ I risultati reggono su quattro insiemi di dati (due corpus per due modelli di em
 - **Controllo della misura**: a parità di liste sondate, il recall calcolato dal nostro codice coincide con quello di un vero indice IVF di Faiss fino alla quarta cifra, su tutti e tre gli insiemi. La lettura a quota fissa usata nelle tabelle non ha un equivalente in Faiss: è verificata da un test contro una versione ovvia e lenta.
 - **Correzione dimostrata con il codice di Faiss**, non solo con la nostra riscrittura.
 - **Confronto generico e dimensione dell'aggiornamento**: lo stesso aggiornamento fatto con k-means, e con 50.000 testi nuovi invece di 10.000.
-- **Tre revisioni indipendenti**: del codice notturno, della bozza della segnalazione letta "da manutentore", e una finale sui documenti. Hanno portato decine di correzioni; gli esiti sono in `_bmad-output/implementation-artifacts/spec-6-consolidamento.md`.
+- **Tre revisioni indipendenti**: del codice notturno, della bozza della segnalazione letta "da manutentore", e una finale sui documenti. Hanno portato decine di correzioni; gli esiti sono in `docs/percorso/spec-6-consolidamento.md`.
 
 ## Cosa regge
 

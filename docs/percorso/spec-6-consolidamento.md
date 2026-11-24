@@ -6,8 +6,8 @@ status: 'done'
 route: 'oneshot'
 review_loop_iteration: 0
 context:
-  - '{project-root}/_bmad-output/planning-artifacts/piano-passo-6-consolidamento.md'
-  - '{project-root}/_bmad-output/planning-artifacts/briefs/brief-rag_emean-2026-11-22/brief.md'
+  - '{project-root}/docs/percorso/piano-passo-6-consolidamento.md'
+  - '{project-root}/docs/percorso/brief.md'
 ---
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
