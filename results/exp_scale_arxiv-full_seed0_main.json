@@ -1,0 +1,491 @@
+{
+ "righe": [
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "mai aggiornare",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.8816997518610421,
+   "recall 0.01": 0.9898883374689825,
+   "recall 0.01, periodo aggiunto": 0.9866666666666667,
+   "sbilanciamento": 1.2019800152607347
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.1653225806451613,
+   "recall 0.01": 0.27009925558312653,
+   "recall 0.01, periodo aggiunto": 0.39466666666666667,
+   "sbilanciamento": 1.1842673410716735
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.7001861042183622,
+   "recall 0.01": 0.8846153846153847,
+   "recall 0.01, periodo aggiunto": 0.9393333333333332,
+   "sbilanciamento": 1.1903670146612244
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "e-means di Faiss con massa iniziale e media mobile",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.3925558312655087,
+   "recall 0.01": 0.45415632754342433,
+   "recall 0.01, periodo aggiunto": 0.5606666666666666,
+   "sbilanciamento": 1.179857800798041
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "DeDrift-Lazy",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.8819478908188586,
+   "recall 0.01": 0.9898883374689825,
+   "recall 0.01, periodo aggiunto": 0.986,
+   "sbilanciamento": 1.2019800152607347
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "DeDrift-Split",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.8816997518610421,
+   "recall 0.01": 0.9897642679900744,
+   "recall 0.01, periodo aggiunto": 0.9866666666666667,
+   "sbilanciamento": 1.1938349336868572
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "DeDrift-Hybrid",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.8818238213399503,
+   "recall 0.01": 0.9897022332506203,
+   "recall 0.01, periodo aggiunto": 0.986,
+   "sbilanciamento": 1.1938349336868572
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo) + liste ricostruite",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.6369727047146402,
+   "recall 0.01": 0.9443548387096774,
+   "recall 0.01, periodo aggiunto": 0.9533333333333334,
+   "sbilanciamento": 4.462672689528163
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi + liste ricostruite",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.7921215880893301,
+   "recall 0.01": 0.9762406947890818,
+   "recall 0.01, periodo aggiunto": 0.9786666666666667,
+   "sbilanciamento": 1.869618027039347
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "e-means di Faiss con massa iniziale e media mobile + liste ricostruite",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.7944168734491315,
+   "recall 0.01": 0.976923076923077,
+   "recall 0.01, periodo aggiunto": 0.976,
+   "sbilanciamento": 1.6041051449469388
+  },
+  {
+   "giro": 1,
+   "testi": 875000,
+   "strategia": "da zero su tutti i testi, e-means 3 epoche",
+   "interrogazioni": 1612,
+   "recall 0.001": 0.8817617866004962,
+   "recall 0.01": 0.9897022332506203,
+   "recall 0.01, periodo aggiunto": 0.9873333333333333,
+   "sbilanciamento": 1.1868021558543673
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "mai aggiornare",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.8802739726027398,
+   "recall 0.01": 0.9897716894977169,
+   "recall 0.01, periodo aggiunto": 0.9875,
+   "sbilanciamento": 1.337758474406881
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.06200913242009133,
+   "recall 0.01": 0.08397260273972604,
+   "recall 0.01, periodo aggiunto": 0.12637362637362637,
+   "sbilanciamento": 1.1221232108298778
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.2926027397260274,
+   "recall 0.01": 0.4102739726027397,
+   "recall 0.01, periodo aggiunto": 0.5072802197802198,
+   "sbilanciamento": 1.1545309734707108
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "e-means di Faiss con massa iniziale e media mobile",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.09356164383561644,
+   "recall 0.01": 0.12182648401826483,
+   "recall 0.01, periodo aggiunto": 0.175,
+   "sbilanciamento": 1.1117068733015845
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "DeDrift-Lazy",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.8850684931506849,
+   "recall 0.01": 0.9902283105022832,
+   "recall 0.01, periodo aggiunto": 0.989423076923077,
+   "sbilanciamento": 1.3247370971958352
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "DeDrift-Split",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.8817351598173516,
+   "recall 0.01": 0.989634703196347,
+   "recall 0.01, periodo aggiunto": 0.9884615384615385,
+   "sbilanciamento": 1.2016988317609778
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "DeDrift-Hybrid",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.886986301369863,
+   "recall 0.01": 0.9901369863013698,
+   "recall 0.01, periodo aggiunto": 0.9902472527472528,
+   "sbilanciamento": 1.1972513790145767
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo) + liste ricostruite",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.6561643835616439,
+   "recall 0.01": 0.9500456621004567,
+   "recall 0.01, periodo aggiunto": 0.9561813186813186,
+   "sbilanciamento": 4.181011507269534
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi + liste ricostruite",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.7247488584474886,
+   "recall 0.01": 0.965296803652968,
+   "recall 0.01, periodo aggiunto": 0.9723901098901099,
+   "sbilanciamento": 2.7712910752738797
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "e-means di Faiss con massa iniziale e media mobile + liste ricostruite",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.7729680365296804,
+   "recall 0.01": 0.9744292237442922,
+   "recall 0.01, periodo aggiunto": 0.9793956043956044,
+   "sbilanciamento": 1.7685787167290177
+  },
+  {
+   "giro": 5,
+   "testi": 1175000,
+   "strategia": "da zero su tutti i testi, e-means 3 epoche",
+   "interrogazioni": 2190,
+   "recall 0.001": 0.8896803652968037,
+   "recall 0.01": 0.9913698630136987,
+   "recall 0.01, periodo aggiunto": 0.9913461538461539,
+   "sbilanciamento": 1.1631968916106836
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "mai aggiornare",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.8699522510231924,
+   "recall 0.01": 0.9894952251023191,
+   "recall 0.01, periodo aggiunto": 0.9877551020408163,
+   "sbilanciamento": 1.8193230324811656
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.049147339699863575,
+   "recall 0.01": 0.06688267394270123,
+   "recall 0.01, periodo aggiunto": 0.0898639455782313,
+   "sbilanciamento": 1.0855534297906348
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.17295361527967257,
+   "recall 0.01": 0.24853342428376535,
+   "recall 0.01, periodo aggiunto": 0.31360544217687075,
+   "sbilanciamento": 1.1209255753789802
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "e-means di Faiss con massa iniziale e media mobile",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.06841746248294679,
+   "recall 0.01": 0.09065484311050478,
+   "recall 0.01, periodo aggiunto": 0.1223809523809524,
+   "sbilanciamento": 1.071718896123205
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "DeDrift-Lazy",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.8823328785811733,
+   "recall 0.01": 0.9908594815825376,
+   "recall 0.01, periodo aggiunto": 0.9895918367346939,
+   "sbilanciamento": 1.7161761880441206
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "DeDrift-Split",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.8799795361527968,
+   "recall 0.01": 0.9896316507503411,
+   "recall 0.01, periodo aggiunto": 0.9886394557823129,
+   "sbilanciamento": 1.2263342915396462
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "DeDrift-Hybrid",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.8883697135061391,
+   "recall 0.01": 0.9903137789904501,
+   "recall 0.01, periodo aggiunto": 0.99,
+   "sbilanciamento": 1.2222353795862644
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo) + liste ricostruite",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.6618008185538882,
+   "recall 0.01": 0.953274215552524,
+   "recall 0.01, periodo aggiunto": 0.9585034013605442,
+   "sbilanciamento": 4.2739420651221645
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi + liste ricostruite",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.7272169167803547,
+   "recall 0.01": 0.9676330150068212,
+   "recall 0.01, periodo aggiunto": 0.9714285714285713,
+   "sbilanciamento": 3.0016243198401664
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "e-means di Faiss con massa iniziale e media mobile + liste ricostruite",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.7737039563437926,
+   "recall 0.01": 0.9751364256480219,
+   "recall 0.01, periodo aggiunto": 0.9780272108843537,
+   "sbilanciamento": 1.7982237820670135
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "da zero su tutti i testi, e-means 3 epoche",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.8988403819918144,
+   "recall 0.01": 0.9911323328785813,
+   "recall 0.01, periodo aggiunto": 0.9925850340136055,
+   "sbilanciamento": 1.1472907695550467
+  },
+  {
+   "giro": 10,
+   "testi": 1550000,
+   "strategia": "da zero su tutti i testi, e-means 10 epoche (riferimento)",
+   "interrogazioni": 2932,
+   "recall 0.001": 0.9010914051841746,
+   "recall 0.01": 0.9923260572987722,
+   "recall 0.01, periodo aggiunto": 0.9935374149659865,
+   "sbilanciamento": 1.155478336839126
+  }
+ ],
+ "tempi": {
+  "indice iniziale: addestramento, 5 epoche": 150.1052154580102,
+  "indice iniziale: assegnazione": 30.348729749995982,
+  "aggiornamento sui nuovi: mai aggiornare": [
+   5.839974619448185e-07,
+   9.580107871443033e-07,
+   8.33999365568161e-07,
+   1.00000761449337e-06,
+   7.080088835209608e-07,
+   9.170034900307655e-07,
+   8.330098353326321e-07,
+   5.420006345957518e-07,
+   7.079943316057324e-07,
+   7.089984137564898e-07
+  ],
+  "aggiornamento sui nuovi: e-means di Faiss sui nuovi, dai centroidi vecchi (uso ingenuo)": [
+   2.515754542007926,
+   2.378098957997281,
+   2.4358697080024285,
+   2.491302000009455,
+   2.5059527499979595,
+   2.3753790830087382,
+   2.3648601250024512,
+   2.399894709000364,
+   2.458861084000091,
+   2.4699552090023644
+  ],
+  "aggiornamento sui nuovi: k-means di Faiss sui nuovi, una iterazione dai centroidi vecchi": [
+   2.886012832997949,
+   2.9769301659980556,
+   3.1421197910094634,
+   3.158386082999641,
+   3.2148439589946065,
+   3.1039980839996133,
+   3.20070079099969,
+   3.17501295900729,
+   3.2106830830016406,
+   3.0736640830000397
+  ],
+  "aggiornamento sui nuovi: e-means di Faiss con massa iniziale e media mobile": [
+   2.1796741250000196,
+   2.0731297500024084,
+   2.0763609999994515,
+   2.1240196250000736,
+   2.155101417010883,
+   2.0308722499903524,
+   2.0607522500067716,
+   2.0783472920011263,
+   2.076143291997141,
+   2.1276375830057077
+  ],
+  "aggiornamento dell'indice: DeDrift-Lazy": [
+   1.8531929589953506,
+   2.0128762920066947,
+   2.169502500008093,
+   2.2859513750008773,
+   2.4287526670086663,
+   2.5852457909932127,
+   2.740548415997182,
+   2.897390958998585,
+   3.0609582909964956,
+   3.1982061250018887
+  ],
+  "aggiornamento dell'indice: DeDrift-Split": [
+   0.06707395800913218,
+   0.07761591699090786,
+   0.08920175000093877,
+   0.09075950000260491,
+   0.11667962500359863,
+   0.1280034999945201,
+   0.14218666599481367,
+   0.1512688749935478,
+   0.1567973329947563,
+   0.1776617499999702
+  ],
+  "aggiornamento dell'indice: DeDrift-Hybrid": [
+   1.841410958004417,
+   1.9929915000102483,
+   2.112237916997401,
+   2.282079333002912,
+   2.562607209009002,
+   2.6009989169979235,
+   2.770841375007876,
+   2.9425890420097858,
+   3.078034124991973,
+   3.386771416000556
+  ],
+  "riassegnazione di tutti i vettori": [
+   [
+    875000,
+    32.90292966700508
+   ],
+   [
+    875000,
+    32.925340624991804
+   ],
+   [
+    875000,
+    33.06730300000345
+   ],
+   [
+    1175000,
+    44.397537665994605
+   ],
+   [
+    1175000,
+    44.21813824999845
+   ],
+   [
+    1175000,
+    44.32943808300479
+   ],
+   [
+    1550000,
+    58.6981177090056
+   ],
+   [
+    1550000,
+    58.680920084007084
+   ],
+   [
+    1550000,
+    58.97046524999314
+   ]
+  ],
+  "addestramento: da zero su tutti i testi, e-means 3 epoche": [
+   [
+    875000,
+    100.26637466700049
+   ],
+   [
+    1175000,
+    134.03594762500143
+   ],
+   [
+    1550000,
+    178.4101997079997
+   ]
+  ],
+  "addestramento: da zero su tutti i testi, e-means 10 epoche (riferimento)": [
+   [
+    1550000,
+    594.1151062499994
+   ]
+  ]
+ },
+ "faiss": "1.16.0"
+}
