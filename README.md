@@ -8,18 +8,18 @@ The full tables, with confidence intervals, are in `results/SUMMARY.md`. A begin
 
 An IVF index of 800,000 vectors receives ten batches of 75,000 new ones (1.55 million at the end, 16,384 centroids). Recall@10 against exact search, scanning 1% of the vectors per query, Faiss 1.16.0, on a MacBook Air M1 with 16 GB:
 
-| After ten refreshes | arXiv abstracts, date order | MS MARCO passages, real Bing queries |
-|---|---:|---:|
-| Never retrain the centroids, only add the new vectors | 0.989 | 0.928 |
-| Retrain with e-means on the new vectors only, starting from the old centroids; old vectors left in their lists | 0.085 | 0.080 |
-| Same centroids, all vectors reassigned | 0.944 | 0.830 |
-| Full rebuild on all vectors, e-means, 3 epochs | 0.992 | 0.932 |
+| After ten refreshes | arXiv abstracts, date order | Stack Overflow answers, date order, real question titles | MS MARCO passages, real Bing queries |
+|---|---:|---:|---:|
+| Never retrain the centroids, only add the new vectors | 0.989 | 0.960 | 0.928 |
+| Retrain with e-means on the new vectors only, starting from the old centroids; old vectors left in their lists | 0.085 | 0.081 | 0.080 |
+| Same centroids, all vectors reassigned | 0.944 | 0.862 | 0.830 |
+| Full rebuild on all vectors, e-means, 3 epochs | 0.992 | 0.971 | 0.932 |
 
-arXiv is the mean of three seeds (spread at most 0.007); MS MARCO is one seed and has no dates, so no drift.
+arXiv and Stack Overflow are the mean of three seeds (spread at most 0.007); MS MARCO is one seed and has no dates, so no drift. On arXiv the queries are abstracts held out of the index. On Stack Overflow the index goes from answers written up to January 2016 to answers written up to July 2022, and the queries are the titles of 2,881 questions asked up to July 2022 (at each round only the questions already asked by then are used).
 
 - **The naive refresh breaks the index silently.** `NumpyEmeans(d, k, nepochs=1).train(new_vectors, init_centroids=old_centroids)` raises no error and no warning. The starting centroids carry almost no weight (the paper says so in §3.1), so the result describes the new batch only.
 - **A full rebuild is cheap.** Three e-means epochs plus reassigning all 1.55 million vectors take about 4 minutes on the laptop.
-- **Doing nothing holds up well** at this operating point: 0.3 points below the 3-epoch rebuild on arXiv scanning 1%, 3.1 points scanning 0.1% (0.867 against 0.898).
+- **Doing nothing holds up well** at this operating point: 0.3 points below the 3-epoch rebuild on arXiv scanning 1%, 3.1 points scanning 0.1% (0.867 against 0.898). On Stack Overflow, where both the documents and the questions drift, the gap is wider: 1.1 points scanning 1%, 3.9 points scanning 0.1% (0.793 against 0.832).
 - **The speed advantage of e-means over k-means depends on the dataset.** On arXiv, 3 epochs (178 s) match the recall of 10 to 25 k-means iterations (553 to 1,382 s); on MS MARCO, 5 k-means iterations (277 s) are enough to match them.
 - **On the Faiss main branch** (commit 16a95d6, one seed) the naive refresh still collapses: 0.067 with the lists left as they are, 0.953 with all vectors reassigned.
 
@@ -90,12 +90,13 @@ vendor/faiss_venv/bin/python check_naive_baselines.py news > results/check_naive
 vendor/faiss_venv/bin/python check_main_revival.py news > results/check_main_revival_news.md
 ```
 
-Large scale (1.5 million texts; it takes about 2 hours of embedding for arXiv, 1 for MS MARCO, and 16 GB of memory):
+Large scale (1.5 million texts; it takes about 2 hours of embedding for arXiv, 1 for MS MARCO, 2 and a half for Stack Overflow including a 34 GB download done one file at a time, and 16 GB of memory):
 
 ```
 uv run --group real embed_corpus.py arxiv-full
 uv run --group real embed_corpus.py msmarco
-uv run exp_scale.py arxiv-full 0 > results/exp_scale_arxiv-full_seed0.md   # about 45 minutes; the same with msmarco
+uv run --group real embed_corpus.py stackoverflow
+uv run exp_scale.py arxiv-full 0 > results/exp_scale_arxiv-full_seed0.md   # about 45 minutes; the same with msmarco and stackoverflow
 uv run bench_scale.py arxiv-full > results/bench_scale_arxiv-full.md        # about 2 hours, on an idle machine
 uv run check_split.py arxiv-full > results/check_split_arxiv-full.md
 ```
@@ -107,6 +108,7 @@ The embeddings end up in `data/`, which is not under version control: each file 
 - News: [`heegyu/news-category-dataset`](https://huggingface.co/datasets/heegyu/news-category-dataset), HuffPost headlines and summaries, 2012-2022.
 - Abstracts: [`gfissore/arxiv-abstracts-2021`](https://huggingface.co/datasets/gfissore/arxiv-abstracts-2021), 210,000 papers sampled at random between 2007 and 2021.
 - Large scale: all the abstracts of the same arXiv dataset (1,585,373) and 1,600,000 passages sampled at random from [`BeIR/msmarco`](https://huggingface.co/datasets/BeIR/msmarco), with 3,000 of its queries.
+- Stack Overflow: 1,600,000 answers and 3,000 question titles sampled at random from [`mikex86/stackoverflow-posts`](https://huggingface.co/datasets/mikex86/stackoverflow-posts), 2008-2023, CC BY-SA.
 - Embeddings: [`all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) and [`bge-base-en-v1.5`](https://huggingface.co/BAAI/bge-base-en-v1.5).
 
 The revisions of datasets and models are not pinned: downloading them in the future may change the numbers slightly.
@@ -114,7 +116,7 @@ The revisions of datasets and models are not pinned: downloading them in the fut
 ## Limits to keep in mind
 
 - Indexes from 200,000 to 1,550,000 vectors on a laptop. At much larger scales the cost of the full rebuild grows and the practical conclusions may change.
-- The queries are texts from the corpus held out of the index; real user questions only on MS MARCO, which however has no dates and therefore no drift.
+- Real user questions together with real drift only on Stack Overflow, and there the questions are titles, each matched against all the answers and not against its own. On MS MARCO the questions are real but there are no dates; on the other datasets the queries are texts from the corpus held out of the index.
 - DeDrift is rewritten from the text of the paper, because no published code appears to exist; Ada-IVF and SPFresh were not tried.
 - Faiss 1.16.0. The Faiss main branch has since changed cluster revival: the single update and one large-scale run were redone there (`results/*_main.md`, `results/check_main_revival_*.md`), with Faiss built from source at commit 16a95d6.
 

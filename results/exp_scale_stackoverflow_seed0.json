@@ -1,0 +1,491 @@
+{
+ "rows": [
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "never update",
+   "queries": 1468,
+   "recall 0.001": 0.8258855585831062,
+   "recall 0.01": 0.9689373297002725,
+   "recall 0.01, added period": 0.9727272727272727,
+   "imbalance": 1.2078460061988572
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use)",
+   "queries": 1468,
+   "recall 0.001": 0.198433242506812,
+   "recall 0.01": 0.36859673024523165,
+   "recall 0.01, added period": 0.4490909090909091,
+   "imbalance": 1.2472955324708572
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids",
+   "queries": 1468,
+   "recall 0.001": 0.6519073569482289,
+   "recall 0.01": 0.8393051771117166,
+   "recall 0.01, added period": 0.8763636363636363,
+   "imbalance": 1.1964154150243265
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means with initial mass and moving average",
+   "queries": 1468,
+   "recall 0.001": 0.8254768392370572,
+   "recall 0.01": 0.9695504087193461,
+   "recall 0.01, added period": 0.972121212121212,
+   "imbalance": 1.2072358633639184
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "DeDrift-Lazy",
+   "queries": 1468,
+   "recall 0.001": 0.8263623978201634,
+   "recall 0.01": 0.9699591280653952,
+   "recall 0.01, added period": 0.972121212121212,
+   "imbalance": 1.2078460061988572
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "DeDrift-Split",
+   "queries": 1468,
+   "recall 0.001": 0.8256130790190734,
+   "recall 0.01": 0.9686648501362398,
+   "recall 0.01, added period": 0.9709090909090909,
+   "imbalance": 1.1956402391666938
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "DeDrift-Hybrid",
+   "queries": 1468,
+   "recall 0.001": 0.8262261580381471,
+   "recall 0.01": 0.9697547683923705,
+   "recall 0.01, added period": 0.972121212121212,
+   "imbalance": 1.1956402391666938
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use) + lists rebuilt",
+   "queries": 1468,
+   "recall 0.001": 0.4564713896457766,
+   "recall 0.01": 0.8400544959128066,
+   "recall 0.01, added period": 0.8678787878787879,
+   "imbalance": 14.319934039520653
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids + lists rebuilt",
+   "queries": 1468,
+   "recall 0.001": 0.7305858310626703,
+   "recall 0.01": 0.9397138964577657,
+   "recall 0.01, added period": 0.949090909090909,
+   "imbalance": 1.8910379951751837
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "Faiss e-means with initial mass and moving average + lists rebuilt",
+   "queries": 1468,
+   "recall 0.001": 0.825,
+   "recall 0.01": 0.9697547683923705,
+   "recall 0.01, added period": 0.9727272727272727,
+   "imbalance": 1.2026698498716735
+  },
+  {
+   "round": 1,
+   "texts": 875000,
+   "strategy": "from scratch on all texts, e-means 3 epochs",
+   "queries": 1468,
+   "recall 0.001": 0.8186648501362399,
+   "recall 0.01": 0.9674386920980927,
+   "recall 0.01, added period": 0.9709090909090909,
+   "imbalance": 1.2048796060943674
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "never update",
+   "queries": 2062,
+   "recall 0.001": 0.8162948593598449,
+   "recall 0.01": 0.9657613967022309,
+   "recall 0.01, added period": 0.9591567852437418,
+   "imbalance": 1.3267475245081033
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use)",
+   "queries": 2062,
+   "recall 0.001": 0.06871968962172648,
+   "recall 0.01": 0.10164888457807952,
+   "recall 0.01, added period": 0.141501976284585,
+   "imbalance": 1.201906126074785
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids",
+   "queries": 2062,
+   "recall 0.001": 0.26799224054316195,
+   "recall 0.01": 0.38467507274490786,
+   "recall 0.01, added period": 0.45731225296442685,
+   "imbalance": 1.1582444942196468
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means with initial mass and moving average",
+   "queries": 2062,
+   "recall 0.001": 0.8208535402521824,
+   "recall 0.01": 0.9678467507274491,
+   "recall 0.01, added period": 0.9627140974967062,
+   "imbalance": 1.3211087346788593
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "DeDrift-Lazy",
+   "queries": 2062,
+   "recall 0.001": 0.821047526673133,
+   "recall 0.01": 0.9677982541222114,
+   "recall 0.01, added period": 0.9624505928853756,
+   "imbalance": 1.3246436082672703
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "DeDrift-Split",
+   "queries": 2062,
+   "recall 0.001": 0.8173617846750728,
+   "recall 0.01": 0.9656644034917555,
+   "recall 0.01, added period": 0.9596837944664032,
+   "imbalance": 1.2106735315614305
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "DeDrift-Hybrid",
+   "queries": 2062,
+   "recall 0.001": 0.8216294859359845,
+   "recall 0.01": 0.9671193016488846,
+   "recall 0.01, added period": 0.9625823451910408,
+   "imbalance": 1.2034419884907197
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use) + lists rebuilt",
+   "queries": 2062,
+   "recall 0.001": 0.5161008729388943,
+   "recall 0.01": 0.8662948593598448,
+   "recall 0.01, added period": 0.8745718050065877,
+   "imbalance": 8.08343806437809
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids + lists rebuilt",
+   "queries": 2062,
+   "recall 0.001": 0.648399612027158,
+   "recall 0.01": 0.9193986420950534,
+   "recall 0.01, added period": 0.925296442687747,
+   "imbalance": 2.8069079599051157
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "Faiss e-means with initial mass and moving average + lists rebuilt",
+   "queries": 2062,
+   "recall 0.001": 0.8218719689621727,
+   "recall 0.01": 0.9676042677012608,
+   "recall 0.01, added period": 0.9617918313570488,
+   "imbalance": 1.2913325465321865
+  },
+  {
+   "round": 5,
+   "texts": 1175000,
+   "strategy": "from scratch on all texts, e-means 3 epochs",
+   "queries": 2062,
+   "recall 0.001": 0.831086323957323,
+   "recall 0.01": 0.9693501454898158,
+   "recall 0.01, added period": 0.9695652173913043,
+   "imbalance": 1.1779833796664554
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "never update",
+   "queries": 2881,
+   "recall 0.001": 0.7956959389101007,
+   "recall 0.01": 0.9593891010065949,
+   "recall 0.01, added period": 0.9515209125475286,
+   "imbalance": 1.7803505531870967
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use)",
+   "queries": 2881,
+   "recall 0.001": 0.05411315515446026,
+   "recall 0.01": 0.08184658104824713,
+   "recall 0.01, added period": 0.11077313054499367,
+   "imbalance": 1.158330509932154
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids",
+   "queries": 2881,
+   "recall 0.001": 0.15057271780631726,
+   "recall 0.01": 0.22554668517875737,
+   "recall 0.01, added period": 0.2708491761723701,
+   "imbalance": 1.1210462407259105
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means with initial mass and moving average",
+   "queries": 2881,
+   "recall 0.001": 0.8076362374175634,
+   "recall 0.01": 0.965636931620965,
+   "recall 0.01, added period": 0.9610899873257288,
+   "imbalance": 1.7009409025065556
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "DeDrift-Lazy",
+   "queries": 2881,
+   "recall 0.001": 0.8079486289482819,
+   "recall 0.01": 0.9648733078792086,
+   "recall 0.01, added period": 0.9603929024081115,
+   "imbalance": 1.7320159869202914
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "DeDrift-Split",
+   "queries": 2881,
+   "recall 0.001": 0.8066990628254078,
+   "recall 0.01": 0.9607080874696287,
+   "recall 0.01, added period": 0.9550063371356148,
+   "imbalance": 1.2556038693827263
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "DeDrift-Hybrid",
+   "queries": 2881,
+   "recall 0.001": 0.8151683443248873,
+   "recall 0.01": 0.9647691773689692,
+   "recall 0.01, added period": 0.9612801013941699,
+   "imbalance": 1.2447799408949012
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means on the new texts, from the old centroids (naive use) + lists rebuilt",
+   "queries": 2881,
+   "recall 0.001": 0.513120444290177,
+   "recall 0.01": 0.8648733078792086,
+   "recall 0.01, added period": 0.8758555133079848,
+   "imbalance": 7.605903955006868
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss k-means on the new texts, one iteration from the old centroids + lists rebuilt",
+   "queries": 2881,
+   "recall 0.001": 0.6298507462686567,
+   "recall 0.01": 0.9117667476570634,
+   "recall 0.01, added period": 0.9182509505703422,
+   "imbalance": 3.350756141659105
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "Faiss e-means with initial mass and moving average + lists rebuilt",
+   "queries": 2881,
+   "recall 0.001": 0.8128080527594586,
+   "recall 0.01": 0.966469975702881,
+   "recall 0.01, added period": 0.9624207858048163,
+   "imbalance": 1.5881851711134236
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "from scratch on all texts, e-means 3 epochs",
+   "queries": 2881,
+   "recall 0.001": 0.8335647344671988,
+   "recall 0.01": 0.9706699062825408,
+   "recall 0.01, added period": 0.9700887198986058,
+   "imbalance": 1.1509066109469304
+  },
+  {
+   "round": 10,
+   "texts": 1550000,
+   "strategy": "from scratch on all texts, e-means 10 epochs (reference)",
+   "queries": 2881,
+   "recall 0.001": 0.8385629989586949,
+   "recall 0.01": 0.9717806317250954,
+   "recall 0.01, added period": 0.9716730038022814,
+   "imbalance": 1.1331596394555672
+  }
+ ],
+ "times": {
+  "initial index: training, 5 epochs": 160.3839288749732,
+  "initial index: assignment": 28.45065195899224,
+  "update on the new texts: never update": [
+   6.67001586407423e-07,
+   3.4580007195472717e-06,
+   5.62501372769475e-06,
+   5.415990017354488e-06,
+   4.6660134103149176e-06,
+   5.499983672052622e-06,
+   4.542001988738775e-06,
+   4.542001988738775e-06,
+   4.875008016824722e-06,
+   5.459005478769541e-06
+  ],
+  "update on the new texts: Faiss e-means on the new texts, from the old centroids (naive use)": [
+   2.8933440830151085,
+   2.9729327500099316,
+   2.920743750000838,
+   2.9354653749905992,
+   2.9755158339976333,
+   2.9487969999900088,
+   2.9788270000135526,
+   2.9393880830029957,
+   2.9259409999940544,
+   2.915780834009638
+  ],
+  "update on the new texts: Faiss k-means on the new texts, one iteration from the old centroids": [
+   2.786616541998228,
+   2.918276665994199,
+   3.0027488339983393,
+   2.989756249997299,
+   2.9897434580198023,
+   2.9844037079892587,
+   3.033525583014125,
+   2.9780574169999454,
+   3.0436297499982174,
+   2.994985584024107
+  ],
+  "update on the new texts: Faiss e-means with initial mass and moving average": [
+   2.9048177920049056,
+   2.923400166997453,
+   2.928614790987922,
+   2.907759291003458,
+   2.9148231250001118,
+   2.9104324169747997,
+   2.91843079199316,
+   2.8970435000082944,
+   2.9135059590043966,
+   2.9054334579850547
+  ],
+  "index update: DeDrift-Lazy": [
+   2.370602791022975,
+   3.1531022080162074,
+   2.6991028749907855,
+   2.4030668750056066,
+   3.977230166987283,
+   3.4854797089938074,
+   2.8502092080016155,
+   4.15677445800975,
+   3.0957697910198476,
+   3.39209216600284
+  ],
+  "index update: DeDrift-Split": [
+   0.08506425001542084,
+   0.08041024999693036,
+   0.09328062500571832,
+   0.10709812500863336,
+   0.12057958397781476,
+   0.1291451659926679,
+   0.1494616669951938,
+   0.16926583400345407,
+   0.18043354200199246,
+   0.1934552910097409
+  ],
+  "index update: DeDrift-Hybrid": [
+   1.876233457995113,
+   2.0739777920243796,
+   2.234241500002099,
+   2.308366000012029,
+   2.5375698340067174,
+   2.6727163330069743,
+   2.791731957986485,
+   3.0365841669845395,
+   3.1362675830023363,
+   3.2794247919810005
+  ],
+  "reassignment of all vectors": [
+   [
+    875000,
+    31.119677874987246
+   ],
+   [
+    875000,
+    31.04306195798563
+   ],
+   [
+    875000,
+    31.09236237499863
+   ],
+   [
+    1175000,
+    41.84387720801169
+   ],
+   [
+    1175000,
+    41.75441249998403
+   ],
+   [
+    1175000,
+    41.745408250018954
+   ],
+   [
+    1550000,
+    55.218981749989325
+   ],
+   [
+    1550000,
+    55.85746633299277
+   ],
+   [
+    1550000,
+    55.178009124996606
+   ]
+  ],
+  "training: from scratch on all texts, e-means 3 epochs": [
+   [
+    875000,
+    100.87689012498595
+   ],
+   [
+    1175000,
+    135.3078890000179
+   ],
+   [
+    1550000,
+    179.42880370799685
+   ]
+  ],
+  "training: from scratch on all texts, e-means 10 epochs (reference)": [
+   [
+    1550000,
+    596.2745993749995
+   ]
+  ]
+ },
+ "faiss": "1.16.0"
+}
